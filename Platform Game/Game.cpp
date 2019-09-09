@@ -109,8 +109,8 @@ public:
 		fCameraPosY = fPlayerPosY;
 
 		//Draw Level
-		int nTileWidth = 16;
-		int nTileHeight = 16;
+		int nTileWidth = 8;
+		int nTileHeight = 8;
 		int nVisibleTilesX = ScreenWidth() / nTileWidth;
 		int nVisibleTilesY = ScreenHeight() / nTileHeight;
 
@@ -123,6 +123,10 @@ public:
 		if (fOffsetY < 0) fOffsetY = 0;
 		if (fOffsetX > nLevelWidth - nVisibleTilesX) fOffsetX = nLevelWidth - nVisibleTilesX;
 		if (fOffsetY > nLevelHeight - nVisibleTilesY) fOffsetY = nLevelHeight - nVisibleTilesY;
+
+		// Get offsets for smooth movement
+		float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
+		float fTileOffsetY = (fOffsetY - (int)fOffsetY) * nTileHeight;
 
 		//Draw visible tile map
 		for (int x = 0; x < nVisibleTilesX; x++)
