@@ -21,13 +21,19 @@ private:
 	//Player Properties
 	float fPlayerPosX = 0.0f;
 	float fPlayerPosY = 0.0f;
+
 	float fPlayerVelX = 0.0f;
 	float fPlayerVelY = 0.0f;
+
 	bool bPlayerOnGround = false;
 
 	//Camera Properties
 	float fCameraPosX = 0.0f;
 	float fCameraPosY = 0.0f;
+
+	olc::Sprite* spriteTiles = nullptr;
+	olc::Sprite* spriteMan = nullptr;
+
 
 public:
 	bool OnUserCreate() override
@@ -52,6 +58,8 @@ public:
 		sLevel += L"................................#.......................#.......";
 		sLevel += L"................................############################....";
 
+		spriteTiles = new olc::Sprite("../Sprites/Megaman.png");
+		spriteMan = new olc::Sprite("../Sprites/Piskel.png");
 
 		return true;
 	}
@@ -74,8 +82,8 @@ public:
 				sLevel[y * nLevelHeight + x] = c;
 		};
 
-		fPlayerVelX = 0.0f;
-		fPlayerVelY = 0.0f;
+		//fPlayerVelX = 0.0f;
+		//fPlayerVelY = 0.0f;
 
 		//Handle Input
 		if (IsFocused())
@@ -92,25 +100,100 @@ public:
 
 			if (GetKey(olc::Key::LEFT).bHeld)
 			{
-				fPlayerVelX = -6.0f;
+				fPlayerVelX += (bPlayerOnGround ? -25.0f : -15.0f) * fElapsedTime; //Player has more control on ground rather than in air
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld)
 			{
-				fPlayerVelX = 6.0f;
+				fPlayerVelX += (bPlayerOnGround ? 25.0f : 15.0f) * fElapsedTime;
+			}
+
+			if (GetKey(olc::Key::SPACE).bPressed)
+			{
+				if (fPlayerVelY == 0) //Player not already jumping or falling. Should be true if player on ground
+				{						//Maybe could jump again at very top of jump, but theres a way around that...
+					fPlayerVelY = -12.0f;
+				}
 			}
 		}
 
-		fPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
-		fPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
+
+		fPlayerVelY += 20.0f * fElapsedTime; //Gravity
+
+		if (bPlayerOnGround) //Add some drag so it doesn't feel like ice
+		{
+			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime;
+			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
+				fPlayerVelX = 0.0f;
+		}
+
+
+		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
+		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
+
+		//Clamp Velocity to prevent getting out of control
+		if (fPlayerVelX > 10.0f)
+			fPlayerVelX = 10.0f;
+
+		if (fPlayerVelX < -10.0f)
+			fPlayerVelX = -10.0f;
+
+		if (fPlayerVelY > 100.0f)
+			fPlayerVelY = 100.0f;
+		
+		if (fPlayerVelY < -100.0f)
+			fPlayerVelY = -100.0f;
+
+
+		//Collision
+		if (fPlayerVelX <= 0) //Player moving left
+		{
+			if (GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f) != L'.')  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
+				fNewPlayerPosX = (int)fNewPlayerPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
+				fPlayerVelX = 0;
+			}
+		}
+		else //Player moving Right
+		{
+			if (GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f) != L'.')
+			{
+				fNewPlayerPosX = (int)fNewPlayerPosX;
+				fPlayerVelX = 0;
+			}
+
+		}
+
+		bPlayerOnGround = false; //Clear flag
+		if (fPlayerVelY <= 0) //Player moving up
+		{
+			//Already resolved X-direction collisions, so we can use the new X position and new Y position
+			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY) != L'.')
+			{
+				fNewPlayerPosY = (int)fNewPlayerPosY + 1;
+				fPlayerVelY = 0;
+			}
+		}
+		else //Player moving down
+		{
+			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY + 1.0f) != L'.')
+			{
+				fNewPlayerPosY = (int)fNewPlayerPosY;
+				fPlayerVelY = 0;
+				bPlayerOnGround = true;
+			}
+		}
+
+		fPlayerPosX = fNewPlayerPosX;
+		fPlayerPosY = fNewPlayerPosY;
 
 
 		fCameraPosX = fPlayerPosX;
 		fCameraPosY = fPlayerPosY;
 
 		//Draw Level
-		int nTileWidth = 8;
-		int nTileHeight = 8;
+		int nTileWidth = 16;
+		int nTileHeight = 16;
 		int nVisibleTilesX = ScreenWidth() / nTileWidth;
 		int nVisibleTilesY = ScreenHeight() / nTileHeight;
 
@@ -128,20 +211,20 @@ public:
 		float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
 		float fTileOffsetY = (fOffsetY - (int)fOffsetY) * nTileHeight;
 
-		//Draw visible tile map
-		for (int x = 0; x < nVisibleTilesX; x++)
+		//Draw visible tile map (overdraw to prevent weird artifacts at screen edges)
+		for (int x = -1; x < nVisibleTilesX + 1; x++)
 		{
-			for (int y = 0; y < nVisibleTilesY; y++)
+			for (int y = -1; y < nVisibleTilesY + 1; y++)
 			{
 				wchar_t sTileID = GetTile(x + fOffsetX, y + fOffsetY);
 				switch (sTileID)
 				{
 				case L'.':
-					FillRect(x * nTileWidth, y * nTileHeight, nTileWidth, nTileHeight, olc::CYAN);
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
 					break;
 
 				case L'#':
-					FillRect(x * nTileWidth, y * nTileHeight, nTileWidth, nTileHeight, olc::RED);
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
 					break;
 				default:
 					break;
@@ -150,7 +233,8 @@ public:
 		}
 
 		//Draw Player
-		FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
+		//FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
+		DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, spriteMan);
 
 		//for (int x = 0; x < ScreenWidth(); x++)
 		//	for (int y = 0; y < ScreenHeight(); y++)
@@ -164,7 +248,7 @@ public:
 int main()
 {
 	Platformer game;
-	if (game.Construct(160, 120, 8, 8))
+	if (game.Construct(256, 240, 4, 4))
 		game.Start();
 
 	return 0;
