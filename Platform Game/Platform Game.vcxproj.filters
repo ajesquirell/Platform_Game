@@ -26,5 +26,8 @@
     <ClInclude Include="olcPGEX_Sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="olcPGEX_Graphics2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

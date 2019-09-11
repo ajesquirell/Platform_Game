@@ -2,10 +2,55 @@
 #include "olcPixelGameEngine.h"
 #define OLC_PGEX_SOUND
 #include "olcPGEX_Sound.h"
+#define OLC_PGE_GRAPHICS2D
+#include "olcPGEX_Graphics2D.h"
 
 #include <iostream>
 #include <string>
 using namespace std;
+
+
+class cAnimator
+{
+public:
+	std::map<std::string, std::vector<olc::Sprite*>> mapStates;
+
+public:
+	std::string sCurrentState;
+	int nCurrentFrame = 0;
+	float fTimeBetweenFrames = 0.1f;
+	float fTimeCounter = 0.0f;
+
+
+	void ChangeState(std::string s)
+	{
+		if (s != sCurrentState)
+		{
+			sCurrentState = s;
+			fTimeCounter = 0;
+			nCurrentFrame = 0;
+		}
+	}
+
+	void Update(float fElapsedTime)
+	{
+		fTimeCounter += fElapsedTime;
+		if (fTimeCounter >= fTimeBetweenFrames)
+		{
+			fTimeCounter -= fTimeBetweenFrames;
+			nCurrentFrame++;
+			if (nCurrentFrame >= mapStates[sCurrentState].size())
+				nCurrentFrame = 0;
+		}
+	}
+
+	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D& t)
+	{
+		olc::GFX2D::DrawSprite(mapStates[sCurrentState][nCurrentFrame], t);
+	}
+
+};
+
 
 class Platformer : public olc::PixelGameEngine
 {
