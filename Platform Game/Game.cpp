@@ -31,8 +31,22 @@ private:
 	float fCameraPosX = 0.0f;
 	float fCameraPosY = 0.0f;
 
+	//Sprite Resources
 	olc::Sprite* spriteTiles = nullptr;
+	olc::Sprite* spriteGround = nullptr;
+	olc::Sprite* spriteCoin = nullptr;
 	olc::Sprite* spriteMan = nullptr;
+	olc::Sprite* spriteManJump = nullptr;
+
+
+	//Sprite selection flags
+	int nDirModX = 0;
+	int nDirModY = 0;
+
+	//Pickup variables
+	bool bPickupCollected = false;
+	int nPlayerScore = 0;
+	string sScoreString;
 
 
 public:
@@ -45,22 +59,26 @@ public:
 		sLevel += L"................................................................";
 		sLevel += L"................................................................";
 		sLevel += L"................................................................";
-		sLevel += L"................................................................";
-		sLevel += L"................................................................";
+		sLevel += L"..................ooo...........................................";
+		sLevel += L".................ooooo..........................................";
 		sLevel += L".....#.........................######...........................";
-		sLevel += L"................#######.........................................";
-		sLevel += L"...............#.......#............................#...........";
-		sLevel += L"..............#.........#.......................###.#...........";
-		sLevel += L"###################################################.######..####";
+		sLevel += L"................#######...........ooooooooo.....................";
+		sLevel += L"...............#.......#.........o..................#...........";
+		sLevel += L"..............#.........#...ooooo...............###.#...........";
+		sLevel += L"###################################################.#####...####";
 		sLevel += L"................................#...................#......#....";
 		sLevel += L"................................#...................#.....#.....";
 		sLevel += L"................................#.....##############.....#......";
-		sLevel += L"................................#.......................#.......";
+		sLevel += L"................................#........oooooooooo.....#.......";
 		sLevel += L"................................############################....";
 
 		spriteTiles = new olc::Sprite("../Sprites/Megaman.png");
+		spriteGround = new olc::Sprite("../Sprites/Ground.png");
+		spriteCoin = new olc::Sprite("../Sprites/Coin.png");
 		spriteMan = new olc::Sprite("../Sprites/Piskel.png");
+		spriteManJump = new olc::Sprite("../Sprites/Piskel_Jump.png");
 
+		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
 		return true;
 	}
 
@@ -79,7 +97,7 @@ public:
 		auto SetTile = [&](int x, int y, wchar_t c)
 		{
 			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
-				sLevel[y * nLevelHeight + x] = c;
+				sLevel[y * nLevelWidth + x] = c;
 		};
 
 		//fPlayerVelX = 0.0f;
@@ -101,11 +119,13 @@ public:
 			if (GetKey(olc::Key::LEFT).bHeld)
 			{
 				fPlayerVelX += (bPlayerOnGround ? -25.0f : -15.0f) * fElapsedTime; //Player has more control on ground rather than in air
+				nDirModY = 1;
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld)
 			{
 				fPlayerVelX += (bPlayerOnGround ? 25.0f : 15.0f) * fElapsedTime;
+				nDirModY = 0;
 			}
 
 			if (GetKey(olc::Key::SPACE).bPressed)
@@ -113,6 +133,7 @@ public:
 				if (fPlayerVelY == 0) //Player not already jumping or falling. Should be true if player on ground
 				{						//Maybe could jump again at very top of jump, but theres a way around that...
 					fPlayerVelY = -12.0f;
+					nDirModX = 1;
 				}
 			}
 		}
@@ -128,9 +149,6 @@ public:
 		}
 
 
-		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
-		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
-
 		//Clamp Velocity to prevent getting out of control
 		if (fPlayerVelX > 10.0f)
 			fPlayerVelX = 10.0f;
@@ -143,6 +161,41 @@ public:
 		
 		if (fPlayerVelY < -100.0f)
 			fPlayerVelY = -100.0f;
+
+		//Calculate potential new position
+		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
+		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
+
+		//Check for pickups!
+		if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'o')
+		{
+			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
+			bPickupCollected = true;
+		}
+
+		if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) == L'o')
+		{
+			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f, L'.');
+			bPickupCollected = true;
+		}
+
+		if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'o')
+		{
+			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
+			bPickupCollected = true;
+		}
+
+		if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f) == L'o')
+		{
+			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');
+			bPickupCollected = true;
+		}
+		
+		if (bPickupCollected)
+		{
+			nPlayerScore += 10;
+			bPickupCollected = false; //Reset
+		}
 
 
 		//Collision
@@ -181,6 +234,7 @@ public:
 				fNewPlayerPosY = (int)fNewPlayerPosY;
 				fPlayerVelY = 0;
 				bPlayerOnGround = true;
+				nDirModX = 0;
 			}
 		}
 
@@ -219,13 +273,17 @@ public:
 				wchar_t sTileID = GetTile(x + fOffsetX, y + fOffsetY);
 				switch (sTileID)
 				{
-				case L'.':
+				case L'.': // Sky
 					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
 					break;
 
 				case L'#':
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
+					//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
+					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteGround);
 					break;
+				case L'o':
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteCoin);
 				default:
 					break;
 				}
@@ -234,11 +292,12 @@ public:
 
 		//Draw Player
 		//FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
-		DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, spriteMan);
+		DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, (nDirModX ? spriteManJump : spriteMan));
 
-		//for (int x = 0; x < ScreenWidth(); x++)
-		//	for (int y = 0; y < ScreenHeight(); y++)
-		//		Draw(x, y, olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
+		//Draw Score
+		sScoreString = "Score: " + to_string(nPlayerScore);
+		DrawString(ScreenWidth() * (3 / 4), 0, sScoreString);
+
 		return true;
 	}
 
