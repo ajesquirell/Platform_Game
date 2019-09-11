@@ -1,5 +1,8 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
+#define OLC_PGEX_SOUND
+#include "olcPGEX_Sound.h"
+
 #include <iostream>
 #include <string>
 using namespace std;
@@ -48,6 +51,11 @@ private:
 	int nPlayerScore = 0;
 	string sScoreString;
 
+	//Sound
+	int sndSampleA;
+	int sndSampleB;
+	int sndSampleC;
+
 
 public:
 	bool OnUserCreate() override
@@ -79,12 +87,28 @@ public:
 		spriteManJump = new olc::Sprite("../Sprites/Piskel_Jump.png");
 
 		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
+
+
+		//Sound
+		olc::SOUND::InitialiseAudio(44100, 1, 8, 512);
+
+		sndSampleA = olc::SOUND::LoadAudioSample("../Sounds/SampleA.wav");
+		sndSampleB = olc::SOUND::LoadAudioSample("../Sounds/SampleB.wav");
+		sndSampleC = olc::SOUND::LoadAudioSample("../Sounds/SampleC.wav");
+
+		olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
+
+		return true;
+	}
+
+	bool OnUserDestroy()
+	{
+		olc::SOUND::DestroyAudio();
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-
 		// Utility Lambdas
 		auto GetTile = [&](int x, int y)
 		{
@@ -134,6 +158,7 @@ public:
 				{						//Maybe could jump again at very top of jump, but theres a way around that...
 					fPlayerVelY = -12.0f;
 					nDirModX = 1;
+					olc::SOUND::PlaySample(sndSampleA); // Plays Sample C loop
 				}
 			}
 		}
@@ -195,6 +220,7 @@ public:
 		{
 			nPlayerScore += 10;
 			bPickupCollected = false; //Reset
+			olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
 		}
 
 
