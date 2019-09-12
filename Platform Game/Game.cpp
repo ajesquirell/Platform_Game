@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+
 using namespace std;
 
 
@@ -82,14 +83,22 @@ private:
 	//Sprite Resources
 	olc::Sprite* spriteTiles = nullptr;
 	olc::Sprite* spriteGround = nullptr;
+	olc::Sprite* spriteBrick = nullptr;
 	olc::Sprite* spriteCoin = nullptr;
+	olc::Sprite* spriteMoney = nullptr;
 	olc::Sprite* spriteMan = nullptr;
 	olc::Sprite* spriteManJump = nullptr;
 
 
 	//Sprite selection flags
-	int nDirModX = 0;
-	int nDirModY = 0;
+	//int nDirModX = 0;
+	//int nDirModY = 0;
+	float fFaceDir = 1.0f;
+	int nPlayerWidth;
+	int nPlayerHeight;
+
+	//Sprite Animation Class
+	cAnimator animPlayer;
 
 	//Pickup variables
 	bool bPickupCollected = false;
@@ -125,11 +134,21 @@ public:
 		sLevel += L"................................#........oooooooooo.....#.......";
 		sLevel += L"................................############################....";
 
-		spriteTiles = new olc::Sprite("../Sprites/Megaman.png");
-		spriteGround = new olc::Sprite("../Sprites/Ground.png");
-		spriteCoin = new olc::Sprite("../Sprites/Coin.png");
-		spriteMan = new olc::Sprite("../Sprites/Piskel.png");
-		spriteManJump = new olc::Sprite("../Sprites/Piskel_Jump.png");
+		//Load Sprites
+		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
+		spriteMoney = new olc::Sprite("../Sprites/Money.png");
+
+		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Right.png"));
+
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_1.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_2.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_3.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_4.png"));
+
+		animPlayer.ChangeState("idle");
+
+		
+
 
 		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
 
@@ -154,6 +173,10 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
+		nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
+		animPlayer.Update(fElapsedTime);
+
 		// Utility Lambdas
 		auto GetTile = [&](int x, int y)
 		{
@@ -188,13 +211,13 @@ public:
 			if (GetKey(olc::Key::LEFT).bHeld)
 			{
 				fPlayerVelX += (bPlayerOnGround ? -25.0f : -15.0f) * fElapsedTime; //Player has more control on ground rather than in air
-				nDirModY = 1;
+				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld)
 			{
 				fPlayerVelX += (bPlayerOnGround ? 25.0f : 15.0f) * fElapsedTime;
-				nDirModY = 0;
+				fFaceDir = +1.0f;
 			}
 
 			if (GetKey(olc::Key::SPACE).bPressed)
@@ -202,7 +225,6 @@ public:
 				if (fPlayerVelY == 0) //Player not already jumping or falling. Should be true if player on ground
 				{						//Maybe could jump again at very top of jump, but theres a way around that...
 					fPlayerVelY = -12.0f;
-					nDirModX = 1;
 					olc::SOUND::PlaySample(sndSampleA); // Plays Sample C loop
 				}
 			}
@@ -215,9 +237,15 @@ public:
 		{
 			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime;
 			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
+			{
 				fPlayerVelX = 0.0f;
+				animPlayer.ChangeState("idle");
+			}
+			else
+			{
+				animPlayer.ChangeState("run");
+			}
 		}
-
 
 		//Clamp Velocity to prevent getting out of control
 		if (fPlayerVelX > 10.0f)
@@ -231,6 +259,11 @@ public:
 		
 		if (fPlayerVelY < -100.0f)
 			fPlayerVelY = -100.0f;
+
+
+		//Change animation speed based on fPlayerVelX
+		animPlayer.fTimeBetweenFrames = 0.1f * (10.0f / fabs(fPlayerVelX));
+
 
 		//Calculate potential new position
 		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
@@ -305,7 +338,6 @@ public:
 				fNewPlayerPosY = (int)fNewPlayerPosY;
 				fPlayerVelY = 0;
 				bPlayerOnGround = true;
-				nDirModX = 0;
 			}
 		}
 
@@ -317,8 +349,8 @@ public:
 		fCameraPosY = fPlayerPosY;
 
 		//Draw Level
-		int nTileWidth = 16;
-		int nTileHeight = 16;
+		int nTileWidth = 22;
+		int nTileHeight = 22;
 		int nVisibleTilesX = ScreenWidth() / nTileWidth;
 		int nVisibleTilesY = ScreenHeight() / nTileHeight;
 
@@ -350,11 +382,11 @@ public:
 
 				case L'#':
 					//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
-					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteGround);
+					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
 					break;
 				case L'o':
 					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
-					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteCoin);
+					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteMoney);
 				default:
 					break;
 				}
@@ -363,11 +395,27 @@ public:
 
 		//Draw Player
 		//FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
-		DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, (nDirModX ? spriteManJump : spriteMan));
+		//DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, (nDirModX ? spriteManJump : spriteMan));
+
+		// Draw Player
+
+		olc::GFX2D::Transform2D t;
+		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite in middle of 
+		t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
+
+		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + 11, (fPlayerPosY - fOffsetY) * nTileHeight +11);
+
+		//SetPixelMode(olc::Pixel::ALPHA);
+		//animPlayer.DrawSelf(this, t);
+		olc::GFX2D::DrawSprite(animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame], t);
+		//SetPixelMode(olc::Pixel::NORMAL);
 
 		//Draw Score
 		sScoreString = "Score: " + to_string(nPlayerScore);
-		DrawString(ScreenWidth() * (3 / 4), 0, sScoreString);
+		DrawString(0, 0, sScoreString);
+
+		DrawString(0, 20, to_string(animPlayer.fTimeBetweenFrames));
+
 
 		return true;
 	}
@@ -378,7 +426,7 @@ public:
 int main()
 {
 	Platformer game;
-	if (game.Construct(256, 240, 4, 4))
+	if (game.Construct(264, 242, 4, 4))
 		game.Start();
 
 	return 0;
