@@ -19,8 +19,9 @@ public:
 public:
 	std::string sCurrentState;
 	int nCurrentFrame = 0;
-	float fTimeBetweenFrames = 0.1f;
+	float fTimeBetweenFrames = 0.1f; //Default
 	float fTimeCounter = 0.0f;
+	bool bAnimateOnceState = false;
 
 
 	void ChangeState(std::string s)
@@ -30,6 +31,18 @@ public:
 			sCurrentState = s;
 			fTimeCounter = 0;
 			nCurrentFrame = 0;
+			bAnimateOnceState = false;
+		}
+	}
+
+	void ChangeState(std::string s, bool b)
+	{
+		if (s != sCurrentState)
+		{
+			sCurrentState = s;
+			fTimeCounter = 0;
+			nCurrentFrame = 0;
+			bAnimateOnceState = b;
 		}
 	}
 
@@ -41,7 +54,13 @@ public:
 			fTimeCounter -= fTimeBetweenFrames;
 			nCurrentFrame++;
 			if (nCurrentFrame >= mapStates[sCurrentState].size())
-				nCurrentFrame = 0;
+			{
+				if (bAnimateOnceState)
+					nCurrentFrame = nCurrentFrame - 1;
+				else
+					nCurrentFrame = 0;
+			}
+				
 		}
 	}
 
@@ -49,7 +68,6 @@ public:
 	{
 		olc::GFX2D::DrawSprite(mapStates[sCurrentState][nCurrentFrame], t);
 	}
-
 };
 
 
@@ -81,13 +99,10 @@ private:
 	float fCameraPosY = 0.0f;
 
 	//Sprite Resources
-	olc::Sprite* spriteTiles = nullptr;
 	olc::Sprite* spriteGround = nullptr;
 	olc::Sprite* spriteBrick = nullptr;
 	olc::Sprite* spriteCoin = nullptr;
-	olc::Sprite* spriteMoney = nullptr;
-	olc::Sprite* spriteMan = nullptr;
-	olc::Sprite* spriteManJump = nullptr;
+	olc::Sprite* spriteJerryBrake = nullptr;
 
 
 	//Sprite selection flags
@@ -99,6 +114,7 @@ private:
 
 	//Sprite Animation Class
 	cAnimator animPlayer;
+	cAnimator animMoney;
 
 	//Pickup variables
 	bool bPickupCollected = false;
@@ -136,19 +152,44 @@ public:
 
 		//Load Sprites
 		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
-		spriteMoney = new olc::Sprite("../Sprites/Money.png");
+		spriteJerryBrake = new olc::Sprite("../Sprites/Jerry_Brake.png");
 
-		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Right.png"));
+		//Animated
+			//Jerry
+		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle.png"));
 
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_1.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_2.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_3.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_Right_4.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_1.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_2.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_3.png"));
+		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_4.png"));
 
-		animPlayer.ChangeState("idle");
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake.png"));
+
+		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_1.png"));
+		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_2.png"));
 
 		
+		animPlayer.mapStates["fall"].push_back(new olc::Sprite("../Sprites/Jerry_Fall.png"));
+			
+			//Money
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_00.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_01.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_02.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_03.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_04.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_05.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_06.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_07.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_08.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_09.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_10.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_11.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_12.png"));
+		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_13.png"));
 
+
+		animPlayer.ChangeState("idle");
+		animMoney.ChangeState("normal");
 
 		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
 
@@ -176,6 +217,7 @@ public:
 		nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
 		nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
 		animPlayer.Update(fElapsedTime);
+		animMoney.Update(fElapsedTime);
 
 		// Utility Lambdas
 		auto GetTile = [&](int x, int y)
@@ -210,14 +252,16 @@ public:
 
 			if (GetKey(olc::Key::LEFT).bHeld)
 			{
-				fPlayerVelX += (bPlayerOnGround ? -25.0f : -15.0f) * fElapsedTime; //Player has more control on ground rather than in air
+				fPlayerVelX += (bPlayerOnGround && fPlayerVelX < 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
 				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
+				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld)
 			{
-				fPlayerVelX += (bPlayerOnGround ? 25.0f : 15.0f) * fElapsedTime;
+				fPlayerVelX += (bPlayerOnGround && fPlayerVelX > 0 ? 25.0f : 12.0f) * fElapsedTime;
 				fFaceDir = +1.0f;
+				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
 			}
 
 			if (GetKey(olc::Key::SPACE).bPressed)
@@ -236,7 +280,7 @@ public:
 		if (bPlayerOnGround) //Add some drag so it doesn't feel like ice
 		{
 			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime;
-			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
+			if (fabs(fPlayerVelX) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
 				fPlayerVelX = 0.0f;
 				animPlayer.ChangeState("idle");
@@ -244,6 +288,28 @@ public:
 			else
 			{
 				animPlayer.ChangeState("run");
+			}
+
+			if (GetKey(olc::Key::LEFT).bHeld)
+			{
+				if (fPlayerVelX > 0)
+					animPlayer.ChangeState("brake");
+			}
+			if (GetKey(olc::Key::RIGHT).bHeld)
+			{
+				if (fPlayerVelX < 0)
+					animPlayer.ChangeState("brake");
+			}
+		}
+		else
+		{
+			if (fPlayerVelY < 0)
+			{
+				animPlayer.ChangeState("jump", true);
+			}
+			else
+			{
+				animPlayer.ChangeState("fall");
 			}
 		}
 
@@ -261,8 +327,11 @@ public:
 			fPlayerVelY = -100.0f;
 
 
-		//Change animation speed based on fPlayerVelX
-		animPlayer.fTimeBetweenFrames = 0.1f * (10.0f / fabs(fPlayerVelX));
+		//Change runnign animation speed based on fPlayerVelX
+		if (animPlayer.sCurrentState == "run")
+			animPlayer.fTimeBetweenFrames = 0.1f * (10.0f / fabs(fPlayerVelX));
+		else
+			animPlayer.fTimeBetweenFrames = 0.1f;
 
 
 		//Calculate potential new position
@@ -385,8 +454,13 @@ public:
 					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
 					break;
 				case L'o':
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
-					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteMoney);
+				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
+					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+					//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteMoney);
+					olc::GFX2D::Transform2D moneyTrans;
+					moneyTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
+					animMoney.DrawSelf(this, moneyTrans);
+				}
 				default:
 					break;
 				}
@@ -415,6 +489,8 @@ public:
 		DrawString(0, 0, sScoreString);
 
 		DrawString(0, 20, to_string(animPlayer.fTimeBetweenFrames));
+		string velOut = "X-Velocity: " + to_string(fPlayerVelX);
+		DrawString(0, 30, velOut);
 
 
 		return true;
