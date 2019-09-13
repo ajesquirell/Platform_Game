@@ -488,6 +488,7 @@ public:
 		sScoreString = "Score: " + to_string(nPlayerScore);
 		DrawString(0, 0, sScoreString);
 
+		//Debug+Testing
 		DrawString(0, 20, to_string(animPlayer.fTimeBetweenFrames));
 		string velOut = "X-Velocity: " + to_string(fPlayerVelX);
 		DrawString(0, 30, velOut);
