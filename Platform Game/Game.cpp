@@ -250,16 +250,17 @@ public:
 				fPlayerVelY = 6.0f;
 			}
 
-			if (GetKey(olc::Key::LEFT).bHeld)
+			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
 			{
-				fPlayerVelX += (bPlayerOnGround && fPlayerVelX < 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
+				fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
 				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
 				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
 			}
 
-			if (GetKey(olc::Key::RIGHT).bHeld)
+			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
 			{
-				fPlayerVelX += (bPlayerOnGround && fPlayerVelX > 0 ? 25.0f : 12.0f) * fElapsedTime;
+				fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : 12.0f) * fElapsedTime;
+				//if (fabs(fPlayerVelX) <= 0.02f) fPlayerVelX = 0.06f; //Prevent from getting stuck if framerate is too high
 				fFaceDir = +1.0f;
 				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
 			}
@@ -280,7 +281,7 @@ public:
 		if (bPlayerOnGround) //Add some drag so it doesn't feel like ice
 		{
 			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime;
-			if (fabs(fPlayerVelX) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
+			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
 				fPlayerVelX = 0.0f;
 				animPlayer.ChangeState("idle");
