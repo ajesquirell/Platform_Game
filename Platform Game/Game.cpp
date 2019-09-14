@@ -23,6 +23,14 @@ public:
 	float fTimeCounter = 0.0f;
 	bool bAnimateOnceState = false;
 
+	cAnimator()
+	{
+		
+	}
+	cAnimator(float fTimeBetweenFrames) //Custom Constructor
+	{
+		this->fTimeBetweenFrames = fTimeBetweenFrames;
+	}
 
 	void ChangeState(std::string s)
 	{
@@ -99,11 +107,8 @@ private:
 	float fCameraPosY = 0.0f;
 
 	//Sprite Resources
-	olc::Sprite* spriteGround = nullptr;
+	olc::Sprite* spriteFloor = nullptr;
 	olc::Sprite* spriteBrick = nullptr;
-	olc::Sprite* spriteCoin = nullptr;
-	olc::Sprite* spriteJerryBrake = nullptr;
-
 
 	//Sprite selection flags
 	//int nDirModX = 0;
@@ -139,20 +144,21 @@ public:
 		sLevel += L"................................................................";
 		sLevel += L"..................ooo...........................................";
 		sLevel += L".................ooooo..........................................";
-		sLevel += L".....#.........................######...........................";
-		sLevel += L"................#######...........ooooooooo.....................";
-		sLevel += L"...............#.......#.........o..................#...........";
-		sLevel += L"..............#.........#...ooooo...............###.#...........";
-		sLevel += L"###################################################.#####...####";
-		sLevel += L"................................#...................#......#....";
-		sLevel += L"................................#...................#.....#.....";
-		sLevel += L"................................#.....##############.....#......";
-		sLevel += L"................................#........oooooooooo.....#.......";
-		sLevel += L"................................############################....";
+		sLevel += L".....B.........................FFFFFFBBBBBBBBBBBBBB.............";
+		sLevel += L"................FFFBBFF...........ooooooooo.....................";
+		sLevel += L"...oooo........F.................o..................F........BBB";
+		sLevel += L"..............F.............ooooo...............FFF.F...........";
+		sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
+		sLevel += L"................................F...................F......F....";
+		sLevel += L"................................F...................F.....F.....";
+		sLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
+		sLevel += L"................................F........oooooooooo.....F.......";
+		sLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....";
 
 		//Load Sprites
+
 		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
-		spriteJerryBrake = new olc::Sprite("../Sprites/Jerry_Brake.png");
+		spriteFloor = new olc::Sprite("../Sprites/Floor.png");
 
 		//Animated
 			//Jerry
@@ -163,7 +169,13 @@ public:
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_3.png"));
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_4.png"));
 
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake.png"));
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_1.png"));
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_2.png"));
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_3.png"));
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_4.png"));
+		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_5.png"));
+
+		animPlayer.mapStates["squat"].push_back(new olc::Sprite("../Sprites/Jerry_Squat.png"));
 
 		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_1.png"));
 		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_2.png"));
@@ -187,7 +199,7 @@ public:
 		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_12.png"));
 		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_13.png"));
 
-
+		//Set initial animated states
 		animPlayer.ChangeState("idle");
 		animMoney.ChangeState("normal");
 
@@ -278,28 +290,21 @@ public:
 
 		fPlayerVelY += 20.0f * fElapsedTime; //Gravity
 
-		if (bPlayerOnGround) //Add some drag so it doesn't feel like ice
+		if (bPlayerOnGround) 
 		{
-			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime;
+			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime; //Add some drag so it doesn't feel like ice
 			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
 				fPlayerVelX = 0.0f;
 				animPlayer.ChangeState("idle");
 			}
+			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
+			{
+					animPlayer.ChangeState("brake");
+			}
 			else
 			{
 				animPlayer.ChangeState("run");
-			}
-
-			if (GetKey(olc::Key::LEFT).bHeld)
-			{
-				if (fPlayerVelX > 0)
-					animPlayer.ChangeState("brake");
-			}
-			if (GetKey(olc::Key::RIGHT).bHeld)
-			{
-				if (fPlayerVelX < 0)
-					animPlayer.ChangeState("brake");
 			}
 		}
 		else
@@ -313,6 +318,7 @@ public:
 				animPlayer.ChangeState("fall");
 			}
 		}
+
 
 		//Clamp Velocity to prevent getting out of control
 		if (fPlayerVelX > 10.0f)
@@ -328,9 +334,11 @@ public:
 			fPlayerVelY = -100.0f;
 
 
-		//Change runnign animation speed based on fPlayerVelX
+		//Change running animation speed based on fPlayerVelX
 		if (animPlayer.sCurrentState == "run")
 			animPlayer.fTimeBetweenFrames = 0.1f * (10.0f / fabs(fPlayerVelX));
+		else if (animPlayer.sCurrentState == "brake")
+			animPlayer.fTimeBetweenFrames = 0.05f;
 		else
 			animPlayer.fTimeBetweenFrames = 0.1f;
 
@@ -397,6 +405,24 @@ public:
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
 			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY) != L'.')
 			{
+				/***Check for breakable blocks (putting here allows for collision and breaking)***/
+				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
+				{
+					SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
+				}
+
+				else if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
+				{
+					SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
+				}
+
+				else if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
+				{
+					if (fFaceDir = 1.0f)
+						SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
+				}
+				/***********************************************************************************/
+
 				fNewPlayerPosY = (int)fNewPlayerPosY + 1;
 				fPlayerVelY = 0;
 			}
@@ -410,6 +436,9 @@ public:
 				bPlayerOnGround = true;
 			}
 		}
+
+
+
 
 		fPlayerPosX = fNewPlayerPosX;
 		fPlayerPosY = fNewPlayerPosY;
@@ -450,19 +479,27 @@ public:
 					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
 					break;
 
-				case L'#':
+				case L'F': //Floor
+					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteFloor);
+					break;
+
+				case L'B':
 					//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
 					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
 					break;
+
 				case L'o':
 				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
-					//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteMoney);
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
 					olc::GFX2D::Transform2D moneyTrans;
-					moneyTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
+					moneyTrans.Translate(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
 					animMoney.DrawSelf(this, moneyTrans);
+					break;
 				}
+
 				default:
+					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::BLACK);
 					break;
 				}
 			}
@@ -475,14 +512,13 @@ public:
 		// Draw Player
 
 		olc::GFX2D::Transform2D t;
-		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite in middle of 
+		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite to 0,0 to do affine transformations
 		t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
-		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + 11, (fPlayerPosY - fOffsetY) * nTileHeight +11);
+		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + 11, (fPlayerPosY - fOffsetY) * nTileHeight + 11);
 
 		//SetPixelMode(olc::Pixel::ALPHA);
-		//animPlayer.DrawSelf(this, t);
-		olc::GFX2D::DrawSprite(animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame], t);
+		animPlayer.DrawSelf(this, t);
 		//SetPixelMode(olc::Pixel::NORMAL);
 
 		//Draw Score
