@@ -1,4 +1,4 @@
-#define OLC_PGE_APPLICATION
+﻿#define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 #define OLC_PGEX_SOUND
 #include "olcPGEX_Sound.h"
@@ -120,6 +120,7 @@ private:
 	//Sprite Animation Class
 	cAnimator animPlayer;
 	cAnimator animMoney;
+	bool bSquat;
 
 	//Pickup variables
 	bool bPickupCollected = false;
@@ -130,6 +131,11 @@ private:
 	int sndSampleA;
 	int sndSampleB;
 	int sndSampleC;
+	int sndBoo;
+	int sndWuWuWu;
+	int sndGetMoney;
+
+	bool bGamePaused = false;
 
 
 public:
@@ -212,6 +218,9 @@ public:
 		sndSampleA = olc::SOUND::LoadAudioSample("../Sounds/SampleA.wav");
 		sndSampleB = olc::SOUND::LoadAudioSample("../Sounds/SampleB.wav");
 		sndSampleC = olc::SOUND::LoadAudioSample("../Sounds/SampleC.wav");
+		sndBoo = olc::SOUND::LoadAudioSample("../Sounds/Boo.wav");
+		sndWuWuWu = olc::SOUND::LoadAudioSample("../Sounds/WuWuWu.wav");
+		sndGetMoney = olc::SOUND::LoadAudioSample("../Sounds/GetMoney.wav");
 
 		olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
 
@@ -226,6 +235,25 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		//Check for game pause
+		if (GetKey(olc::Key::P).bPressed)
+		{
+			if (!bGamePaused) { 
+				bGamePaused = true; /*Pause*/
+				olc::SOUND::StopSample(sndSampleC);
+				olc::SOUND::PlaySample(sndGetMoney);
+			}
+			else { 
+				bGamePaused = false; /*Unpause*/
+				olc::SOUND::PlaySample(sndSampleC, true);
+			}
+		}
+		if (bGamePaused)
+		{
+			DrawString(ScreenWidth() / 2.5f, ScreenHeight() / 2.5f, "Paused");
+			return true; //Game loop won't execute
+		}
+
 		nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
 		nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
 		animPlayer.Update(fElapsedTime);
@@ -257,32 +285,38 @@ public:
 				fPlayerVelY = -6.0f;
 			}
 
+			bSquat = false; //Reset flag
 			if (GetKey(olc::Key::DOWN).bHeld)
 			{
 				fPlayerVelY = 6.0f;
+				bSquat = true;
 			}
 
 			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
 			{
-				fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
+				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
+
 				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
 				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
 			{
-				fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : 12.0f) * fElapsedTime;
-				//if (fabs(fPlayerVelX) <= 0.02f) fPlayerVelX = 0.06f; //Prevent from getting stuck if framerate is too high
+				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+					fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : 12.0f) * fElapsedTime;
+
 				fFaceDir = +1.0f;
 				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
 			}
 
 			if (GetKey(olc::Key::SPACE).bPressed)
 			{
-				if (fPlayerVelY == 0) //Player not already jumping or falling. Should be true if player on ground
+				if (bPlayerOnGround) //Player not already jumping or falling. Should be true if player on ground
 				{						//Maybe could jump again at very top of jump, but theres a way around that...
 					fPlayerVelY = -12.0f;
-					olc::SOUND::PlaySample(sndSampleA); // Plays Sample C loop
+					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
+					olc::SOUND::PlaySample(sndBoo);
 				}
 			}
 		}
@@ -306,6 +340,9 @@ public:
 			{
 				animPlayer.ChangeState("run");
 			}
+
+			if (bSquat) //This is changed in the Input Handling section
+				animPlayer.ChangeState("squat");
 		}
 		else
 		{
@@ -319,6 +356,9 @@ public:
 			}
 		}
 
+		////Animation overrides
+		//if (bSquat)
+		//	animPlayer.ChangeState("squat");
 
 		//Clamp Velocity to prevent getting out of control
 		if (fPlayerVelX > 10.0f)
@@ -403,7 +443,7 @@ public:
 		if (fPlayerVelY <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY) != L'.')
+			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY + 0.0f) != L'.')
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
 				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
@@ -526,11 +566,13 @@ public:
 		DrawString(0, 0, sScoreString);
 
 		//Debug+Testing
-		DrawString(0, 20, to_string(animPlayer.fTimeBetweenFrames));
-		string velOut = "X-Velocity: " + to_string(fPlayerVelX);
-		DrawString(0, 30, velOut);
+		DrawString(0, 20, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
+		DrawString(0, 30, "X-Velocity: " + to_string(fPlayerVelX));
+		DrawString(0, 40, "Y-Velocity: " + to_string(fPlayerVelY));
+		DrawString(130, 0, "AAA Studios\nJerryyyyyyyy");
 
-
+		//Play random Jerry Sounds
+		
 		return true;
 	}
 
