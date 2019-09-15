@@ -405,8 +405,13 @@ public:
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
 			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY) != L'.')
 			{
-				/***Check for breakable blocks (putting here allows for collision and breaking)***/
-				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
+				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
+				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
+				{
+						SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
+				}
+
+				else if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
 				{
 					SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 				}
@@ -416,11 +421,6 @@ public:
 					SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
 				}
 
-				else if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
-				{
-					if (fFaceDir = 1.0f)
-						SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
-				}
 				/***********************************************************************************/
 
 				fNewPlayerPosY = (int)fNewPlayerPosY + 1;
