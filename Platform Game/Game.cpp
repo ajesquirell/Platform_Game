@@ -139,6 +139,9 @@ private:
 
 	bool bGamePaused = false;
 
+	//Debug + Testing
+	bool showDebug = true;
+
 
 public:
 	bool HandlePickup(wchar_t c) //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
@@ -171,7 +174,7 @@ public:
 		sLevel += L"................................................................";
 		sLevel += L"..................ooo...........................................";
 		sLevel += L".................ooooo..........................................";
-		sLevel += L".....B.........................FFFFFFBBBBBBBBBBBBBB.............";
+		sLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
 		sLevel += L"................FFFBBFF...........ooooooooo.....................";
 		sLevel += L"...oooo........F.................o..................F........BBB";
 		sLevel += L"..............F.............ooooo...............FFF.F...........";
@@ -348,10 +351,13 @@ public:
 		if (bPlayerOnGround) 
 		{
 			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime; //Add some drag so it doesn't feel like ice
-			if (fabs(fPlayerVelX) < 0.01f) //Clamp vel to 0 if near 0 to allow player to stop
+			if (fabs(fPlayerVelX) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
-				fPlayerVelX = 0.0f;
-				animPlayer.ChangeState("idle");
+				if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
+				{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
+					fPlayerVelX = 0.0f;
+					animPlayer.ChangeState("idle");
+				}
 			}
 			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
 			{
@@ -568,10 +574,21 @@ public:
 		DrawString(0, 0, sScoreString);
 
 		//Debug+Testing
-		DrawString(0, 20, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
-		DrawString(0, 30, "X-Velocity: " + to_string(fPlayerVelX));
-		DrawString(0, 40, "Y-Velocity: " + to_string(fPlayerVelY));
-		DrawString(130, 0, "AAA Studios\nJerryyyyyyyy");
+		if (GetKey(olc::Key::D).bPressed)
+			if (showDebug)
+				showDebug = false;
+			else
+				showDebug = true;
+
+		if (showDebug)
+		{
+			DrawString(0, 15, "Debug: (D to hide)");
+			DrawString(0, 24, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
+			DrawString(1, 33, "X-Velocity: " + to_string(fPlayerVelX) + "\nY-Velocity: " + to_string(fPlayerVelY));
+		}
+
+		DrawString(130, 0, "AAA Studios\nJerryyyyyyyy", olc::GREY);
+		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
 		//Play random Jerry Sounds
 		
