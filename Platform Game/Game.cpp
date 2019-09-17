@@ -78,7 +78,6 @@ public:
 	}
 };
 
-
 class Platformer : public olc::PixelGameEngine
 {
 public:
@@ -116,14 +115,17 @@ private:
 	float fFaceDir = 1.0f;
 	int nPlayerWidth;
 	int nPlayerHeight;
+	bool bSquat;
 
 	//Sprite Animation Class
 	cAnimator animPlayer;
 	cAnimator animMoney;
-	bool bSquat;
+
+	//Pickups
+#define COIN L'o'
 
 	//Pickup variables
-	bool bPickupCollected = false;
+	//bool bPickupCollected = false;
 	int nPlayerScore = 0;
 	string sScoreString;
 
@@ -139,6 +141,25 @@ private:
 
 
 public:
+	bool HandlePickup(wchar_t c) //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
+	{
+		bool success = false; //In case we add a pickup and don't implement it here, it will return false.
+		switch (c)					//Oh and this will be the logic to check for pickups, if it's not meant to be picked up and not implemented here, nothing will happen
+		{							//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
+		case (COIN):
+			nPlayerScore += 10;
+			olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
+			success = true;
+			break;
+
+		case (L'1'):
+
+			break;
+		}
+
+		return success;
+	}
+
 	bool OnUserCreate() override
 	{
 		nLevelWidth = 64;
@@ -388,36 +409,17 @@ public:
 		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
 
 		//Check for pickups!
-		if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'o')
-		{
+		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
 			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
-			bPickupCollected = true;
-		}
 
-		if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) == L'o')
-		{
+		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
 			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f, L'.');
-			bPickupCollected = true;
-		}
 
-		if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'o')
-		{
+		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f)))
 			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
-			bPickupCollected = true;
-		}
 
-		if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f) == L'o')
-		{
+		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f)))
 			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');
-			bPickupCollected = true;
-		}
-		
-		if (bPickupCollected)
-		{
-			nPlayerScore += 10;
-			bPickupCollected = false; //Reset
-			olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
-		}
 
 
 		//Collision
