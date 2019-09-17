@@ -312,8 +312,8 @@ public:
 
 			if (GetKey(olc::Key::SPACE).bPressed)
 			{
-				if (bPlayerOnGround) //Player not already jumping or falling. Should be true if player on ground
-				{						//Maybe could jump again at very top of jump, but theres a way around that...
+				if (bPlayerOnGround)
+				{
 					fPlayerVelY = -12.0f;
 					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
 					olc::SOUND::PlaySample(sndBoo);
