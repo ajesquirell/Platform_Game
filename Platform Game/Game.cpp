@@ -91,6 +91,7 @@ private:
 	wstring sLevel;
 	int nLevelWidth;
 	int nLevelHeight;
+	olc::Pixel skyColor = olc::CYAN;
 
 	//Player Properties
 	float fPlayerPosX = 0.0f;
@@ -108,6 +109,7 @@ private:
 	//Sprite Resources
 	olc::Sprite* spriteFloor = nullptr;
 	olc::Sprite* spriteBrick = nullptr;
+	olc::Sprite* spriteTEST = nullptr;
 
 	//Sprite selection flags
 	//int nDirModX = 0;
@@ -123,6 +125,7 @@ private:
 
 	//Pickups
 #define COIN L'o'
+#define TEST L'1'
 
 	//Pickup variables
 	//bool bPickupCollected = false;
@@ -155,8 +158,10 @@ public:
 			success = true;
 			break;
 
-		case (L'1'):
-
+		case (TEST):
+			skyColor = olc::DARK_YELLOW;
+			olc::SOUND::PlaySample(sndWuWuWu);
+			success = true;
 			break;
 		}
 
@@ -172,13 +177,13 @@ public:
 		sLevel += L"................................................................";
 		sLevel += L"................................................................";
 		sLevel += L"................................................................";
-		sLevel += L"..................ooo...........................................";
+		sLevel += L".....1............ooo...........................................";
 		sLevel += L".................ooooo..........................................";
 		sLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
 		sLevel += L"................FFFBBFF...........ooooooooo.....................";
 		sLevel += L"...oooo........F.................o..................F........BBB";
 		sLevel += L"..............F.............ooooo...............FFF.F...........";
-		sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
+		sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF...FFFF";
 		sLevel += L"................................F...................F......F....";
 		sLevel += L"................................F...................F.....F.....";
 		sLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
@@ -189,6 +194,7 @@ public:
 
 		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
 		spriteFloor = new olc::Sprite("../Sprites/Floor.png");
+		spriteTEST = new olc::Sprite("../Sprites/Piskel.png");
 
 		//Animated
 			//Jerry
@@ -319,7 +325,7 @@ public:
 			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
 			{
 				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air
+					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air, and when moving in the same direction rather than turning around, feels more like og Mario
 
 				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
 				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
@@ -356,9 +362,10 @@ public:
 				if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
 				{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
 					fPlayerVelX = 0.0f;
-					animPlayer.ChangeState("idle");
 				}
-				else if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably should have this here but I think it's funny
+				animPlayer.ChangeState("idle");
+
+				if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably should have this here but I think it's funny
 					animPlayer.ChangeState("run");
 			}
 			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
@@ -439,7 +446,7 @@ public:
 				fPlayerVelX = 0;
 			}
 		}
-		else //Player moving Right
+		else if (fPlayerVelX > 0) //Player moving Right
 		{
 			if (GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f) != L'.')
 			{
@@ -526,7 +533,7 @@ public:
 				switch (sTileID)
 				{
 				case L'.': // Sky
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
 					break;
 
 				case L'F': //Floor
@@ -541,9 +548,22 @@ public:
 
 				case L'o':
 				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
 					olc::GFX2D::Transform2D moneyTrans;
 					moneyTrans.Translate(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
+					animMoney.DrawSelf(this, moneyTrans);
+					break;
+				}
+
+				case L'1':
+				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
+					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+					olc::GFX2D::Transform2D moneyTrans;
+					moneyTrans.Translate(-nTileWidth / 2, -nTileHeight / 2);
+					moneyTrans.Rotate(fPlayerVelY);
+					moneyTrans.Scale(fFaceDir, 1.0f);
+					moneyTrans.Translate(x * nTileWidth - fTileOffsetX + nTileWidth / 2, y * nTileHeight - fTileOffsetY + nTileHeight / 2);
+
 					animMoney.DrawSelf(this, moneyTrans);
 					break;
 				}
@@ -587,12 +607,37 @@ public:
 			DrawString(0, 15, "Debug: (D to hide)");
 			DrawString(0, 24, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
 			DrawString(1, 33, "X-Velocity: " + to_string(fPlayerVelX) + "\nY-Velocity: " + to_string(fPlayerVelY));
+			DrawString(1, 53, to_string(fElapsedTime));
 		}
 
 		DrawString(130, 0, "AAA Studios\nJerryyyyyyyy", olc::GREY);
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
-		//Play random Jerry Sounds
+		//Game end (for now of course)
+		if (nPlayerScore >= 370)
+		{
+			//Reset level (probably make this into a function later, or expand it to handle multiple levels
+			sLevel =  L"................................................................";
+			sLevel += L"................................................................";
+			sLevel += L"................................................................";
+			sLevel += L"................................................................";
+			sLevel += L".....1............ooo...........................................";
+			sLevel += L".................ooooo..........................................";
+			sLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
+			sLevel += L"................FFFBBFF...........ooooooooo.....................";
+			sLevel += L"...oooo........F.................o..................F........BBB";
+			sLevel += L"..............F.............ooooo...............FFF.F...........";
+			sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
+			sLevel += L"................................F...................F......F....";
+			sLevel += L"................................F...................F.....F.....";
+			sLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
+			sLevel += L"................................F........oooooooooo.....F.......";
+			sLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....";
+
+			nPlayerScore = 0;
+		}
+
+		//Play random Jerry Sounds????
 		
 		return true;
 	}
@@ -604,6 +649,9 @@ int main()
 {
 	Platformer game;
 	if (game.Construct(264, 242, 4, 4))
+	//if (game.Construct(264, 242, 4, 4, false, true)) //VSync
+	//if (game.Construct(264, 900, 4, 4))
+
 		game.Start();
 
 	return 0;
