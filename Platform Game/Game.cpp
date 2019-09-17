@@ -325,16 +325,16 @@ public:
 			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
 			{
 				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : -12.0f) * fElapsedTime; //Player has more control on ground rather than in air, and when moving in the same direction rather than turning around, feels more like og Mario
-
-				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing
+					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : bPlayerOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
+																																	//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
+				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
 				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
 			{
 				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : 12.0f) * fElapsedTime;
+					fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : bPlayerOnGround ? 8.0f : 14.0f) * fElapsedTime; 
 
 				fFaceDir = +1.0f;
 				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
@@ -365,7 +365,7 @@ public:
 				}
 				animPlayer.ChangeState("idle");
 
-				if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably should have this here but I think it's funny
+				if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably shouldn't have this here but I think it's funny
 					animPlayer.ChangeState("run");
 			}
 			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
