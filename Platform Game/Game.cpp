@@ -358,6 +358,8 @@ public:
 					fPlayerVelX = 0.0f;
 					animPlayer.ChangeState("idle");
 				}
+				else if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably should have this here but I think it's funny
+					animPlayer.ChangeState("run");
 			}
 			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
 			{
