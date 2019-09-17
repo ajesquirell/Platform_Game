@@ -408,7 +408,7 @@ public:
 		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
 		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
 
-		//Check for pickups!
+		//Check for pickups! 
 		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
 			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 
