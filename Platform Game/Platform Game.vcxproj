@@ -25,6 +25,13 @@
     <ClInclude Include="olcPGEX_Graphics2D.h" />
     <ClInclude Include="olcPGEX_Sound.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Platform Game.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="jerry_icon.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

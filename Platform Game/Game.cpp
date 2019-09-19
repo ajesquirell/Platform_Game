@@ -174,14 +174,30 @@ public:
 	{
 		//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
 		wifstream inLevel("Level_" + to_string(levelSelect) + ".txt");
-		if (!inLevel) { cout << "Unable to open file." << endl; }
+		if (!inLevel) { cout << "Unable to open file." << endl; return; }
+
+		int oldWidth = nLevelWidth;
+		int oldHeight = nLevelHeight;
+
 		inLevel >> nLevelWidth >> nLevelHeight;
-		
+		if (nLevelWidth == 0 || nLevelHeight == 0) 
+		{ 
+			cout << "Ensure Level Width and Level Height are respectively defined in the first 2 lines of the level file." << endl;
+			nLevelWidth = oldWidth;
+			nLevelHeight = oldHeight;
+			return;
+		}
+
+		//File should be good, read
 		wstring buffer;
+		sCurrentLevel.clear(); //Clear current level - should'nt need this but just in case
 		for (int x = 0; x < nLevelHeight; x++)
 		{
 			inLevel >> buffer;
-			sCurrentLevel += buffer;
+			if (x == 0)
+				sCurrentLevel = buffer;
+			else
+				sCurrentLevel += buffer;
 		}
 
 		/*int currentPos = inLevel.tellg();
@@ -202,26 +218,8 @@ public:
 
 	bool OnUserCreate() override
 	{
+		//Load level
 		LoadLevel(1);
-		//nLevelWidth = 128;
-		//nLevelHeight = 16;
-
-		/*sCurrentLevel += L"................................................................................................................................";
-		sCurrentLevel += L"................................................................................................................................";
-		sCurrentLevel += L"................................................................................................................................";
-		sCurrentLevel += L"................................................................................................................................";
-		sCurrentLevel += L".....1............ooo...........................................................................................................";
-		sCurrentLevel += L".................ooooo..........................................................................................................";
-		sCurrentLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............................................................................";
-		sCurrentLevel += L"................FFFBBFF...........ooooooooo.....................................................................................";
-		sCurrentLevel += L"...oooo........F.................o..................F........BBB................................................................";
-		sCurrentLevel += L"..............F.............ooooo...............FFF.F...........................................................................";
-		sCurrentLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF................................................................";
-		sCurrentLevel += L"................................F...................F......F....................................................................";
-		sCurrentLevel += L"................................F...................F.....F.....................................................................";
-		sCurrentLevel += L"................................F.....FFFFFFFFFFFFFF.....F......................................................................";
-		sCurrentLevel += L"................................F........oooooooooo.....F.......................................................................";
-		sCurrentLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........................................................";*/
 
 		//Load Sprites
 
@@ -273,7 +271,7 @@ public:
 		animPlayer.ChangeState("idle");
 		animMoney.ChangeState("normal");
 
-		//SetPixelMode(olc::Pixel::MASK); //Allow Transparency
+		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
 
 
 		//Sound
@@ -602,6 +600,11 @@ public:
 					break;
 				}
 
+				case L'P':
+					fPlayerPosX = x + fOffsetX;
+					fPlayerPosY = y + fOffsetY;
+					SetTile(x + fOffsetX, y + fOffsetY, L'.');
+
 				default:
 					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::BLACK);
 					break;
@@ -649,28 +652,12 @@ public:
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
 		//Game end (for now of course)
-		if (nPlayerScore >= 370)
+		/*if (nPlayerScore >= 30)
 		{
-			//Reset level (probably make this into a function later, or expand it to handle multiple levels
-			sCurrentLevel =  L"................................................................";
-			sCurrentLevel += L"................................................................";
-			sCurrentLevel += L"................................................................";
-			sCurrentLevel += L"................................................................";
-			sCurrentLevel += L".....1............ooo...........................................";
-			sCurrentLevel += L".................ooooo..........................................";
-			sCurrentLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
-			sCurrentLevel += L"................FFFBBFF...........ooooooooo.....................";
-			sCurrentLevel += L"...oooo........F.................o..................F........BBB";
-			sCurrentLevel += L"..............F.............ooooo...............FFF.F...........";
-			sCurrentLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
-			sCurrentLevel += L"................................F...................F......F....";
-			sCurrentLevel += L"................................F...................F.....F.....";
-			sCurrentLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
-			sCurrentLevel += L"................................F........oooooooooo.....F.......";
-			sCurrentLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....";
-
 			nPlayerScore = 0;
-		}
+
+			LoadLevel(2);
+		}*/
 
 		//Play random Jerry Sounds????
 		
