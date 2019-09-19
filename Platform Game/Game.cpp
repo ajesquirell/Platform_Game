@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -88,7 +89,8 @@ public:
 
 private:
 	//Level Storage
-	wstring sLevel;
+	std::vector<wstring> vLevels;
+	wstring sCurrentLevel;
 	int nLevelWidth;
 	int nLevelHeight;
 	olc::Pixel skyColor = olc::CYAN;
@@ -168,27 +170,58 @@ public:
 		return success;
 	}
 
+	void LoadLevel(int levelSelect)
+	{
+		//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
+		wifstream inLevel("Level_" + to_string(levelSelect) + ".txt");
+		if (!inLevel) { cout << "Unable to open file." << endl; }
+		inLevel >> nLevelWidth >> nLevelHeight;
+		
+		wstring buffer;
+		for (int x = 0; x < nLevelHeight; x++)
+		{
+			inLevel >> buffer;
+			sCurrentLevel += buffer;
+		}
+
+		/*int currentPos = inLevel.tellg();
+		cout << inLevel.tellg();
+		inLevel.seekg(0, inLevel.end);
+		int length = (int)inLevel.tellg() - currentPos;
+		inLevel.seekg(currentPos, inLevel.beg);
+
+		wchar_t* buffer = new wchar_t[length];
+		inLevel.read(buffer, length);
+
+		sCurrentLevel = buffer;*/
+
+		//sCurrentLevel = vLevels[levelSelect];
+		//this->nLevelWidth = nLevelWidth;
+		//this->nLevelHeight = nLevelHeight;
+	}
+
 	bool OnUserCreate() override
 	{
-		nLevelWidth = 128;
-		nLevelHeight = 16;
+		LoadLevel(1);
+		//nLevelWidth = 128;
+		//nLevelHeight = 16;
 
-		sLevel += L"................................................................................................................................";
-		sLevel += L"................................................................................................................................";
-		sLevel += L"................................................................................................................................";
-		sLevel += L"................................................................................................................................";
-		sLevel += L".....1............ooo...........................................................................................................";
-		sLevel += L".................ooooo..........................................................................................................";
-		sLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............................................................................";
-		sLevel += L"................FFFBBFF...........ooooooooo.....................................................................................";
-		sLevel += L"...oooo........F.................o..................F........BBB................................................................";
-		sLevel += L"..............F.............ooooo...............FFF.F...........................................................................";
-		sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF................................................................";
-		sLevel += L"................................F...................F......F....................................................................";
-		sLevel += L"................................F...................F.....F.....................................................................";
-		sLevel += L"................................F.....FFFFFFFFFFFFFF.....F......................................................................";
-		sLevel += L"................................F........oooooooooo.....F.......................................................................";
-		sLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....................................................................";
+		/*sCurrentLevel += L"................................................................................................................................";
+		sCurrentLevel += L"................................................................................................................................";
+		sCurrentLevel += L"................................................................................................................................";
+		sCurrentLevel += L"................................................................................................................................";
+		sCurrentLevel += L".....1............ooo...........................................................................................................";
+		sCurrentLevel += L".................ooooo..........................................................................................................";
+		sCurrentLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............................................................................";
+		sCurrentLevel += L"................FFFBBFF...........ooooooooo.....................................................................................";
+		sCurrentLevel += L"...oooo........F.................o..................F........BBB................................................................";
+		sCurrentLevel += L"..............F.............ooooo...............FFF.F...........................................................................";
+		sCurrentLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF................................................................";
+		sCurrentLevel += L"................................F...................F......F....................................................................";
+		sCurrentLevel += L"................................F...................F.....F.....................................................................";
+		sCurrentLevel += L"................................F.....FFFFFFFFFFFFFF.....F......................................................................";
+		sCurrentLevel += L"................................F........oooooooooo.....F.......................................................................";
+		sCurrentLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........................................................";*/
 
 		//Load Sprites
 
@@ -198,7 +231,8 @@ public:
 
 		//Animated
 			//Jerry
-		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle.png"));
+		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Clone.png"));
+		animPlayer.mapStates["idle2"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Clone2.png"));
 
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_1.png"));
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_2.png"));
@@ -239,7 +273,7 @@ public:
 		animPlayer.ChangeState("idle");
 		animMoney.ChangeState("normal");
 
-		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
+		//SetPixelMode(olc::Pixel::MASK); //Allow Transparency
 
 
 		//Sound
@@ -293,7 +327,7 @@ public:
 		auto GetTile = [&](int x, int y)
 		{
 			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
-				return sLevel[y * nLevelWidth + x];
+				return sCurrentLevel[y * nLevelWidth + x];
 			else
 				return L' ';
 		};
@@ -301,7 +335,7 @@ public:
 		auto SetTile = [&](int x, int y, wchar_t c)
 		{
 			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
-				sLevel[y * nLevelWidth + x] = c;
+				sCurrentLevel[y * nLevelWidth + x] = c;
 		};
 
 		//fPlayerVelX = 0.0f;
@@ -585,7 +619,8 @@ public:
 		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite to 0,0 to do affine transformations
 		t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
-		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + 11, (fPlayerPosY - fOffsetY) * nTileHeight + 11);
+		t.Rotate(fPlayerPosX);
+		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + nPlayerWidth / 2, (fPlayerPosY - fOffsetY) * nTileHeight + nPlayerHeight / 2);
 
 		//SetPixelMode(olc::Pixel::ALPHA);
 		animPlayer.DrawSelf(this, t);
@@ -617,22 +652,22 @@ public:
 		if (nPlayerScore >= 370)
 		{
 			//Reset level (probably make this into a function later, or expand it to handle multiple levels
-			sLevel =  L"................................................................";
-			sLevel += L"................................................................";
-			sLevel += L"................................................................";
-			sLevel += L"................................................................";
-			sLevel += L".....1............ooo...........................................";
-			sLevel += L".................ooooo..........................................";
-			sLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
-			sLevel += L"................FFFBBFF...........ooooooooo.....................";
-			sLevel += L"...oooo........F.................o..................F........BBB";
-			sLevel += L"..............F.............ooooo...............FFF.F...........";
-			sLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
-			sLevel += L"................................F...................F......F....";
-			sLevel += L"................................F...................F.....F.....";
-			sLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
-			sLevel += L"................................F........oooooooooo.....F.......";
-			sLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....";
+			sCurrentLevel =  L"................................................................";
+			sCurrentLevel += L"................................................................";
+			sCurrentLevel += L"................................................................";
+			sCurrentLevel += L"................................................................";
+			sCurrentLevel += L".....1............ooo...........................................";
+			sCurrentLevel += L".................ooooo..........................................";
+			sCurrentLevel += L".....F.........................FFFFFFBBBBBBBBBBBBBB.............";
+			sCurrentLevel += L"................FFFBBFF...........ooooooooo.....................";
+			sCurrentLevel += L"...oooo........F.................o..................F........BBB";
+			sCurrentLevel += L"..............F.............ooooo...............FFF.F...........";
+			sCurrentLevel += L"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFF...FFFF";
+			sCurrentLevel += L"................................F...................F......F....";
+			sCurrentLevel += L"................................F...................F.....F.....";
+			sCurrentLevel += L"................................F.....FFFFFFFFFFFFFF.....F......";
+			sCurrentLevel += L"................................F........oooooooooo.....F.......";
+			sCurrentLevel += L"................................FFFFFFFFFFFFFFFFFFFFFFFFFFFF....";
 
 			nPlayerScore = 0;
 		}
