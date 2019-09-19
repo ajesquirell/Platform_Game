@@ -173,7 +173,7 @@ public:
 	void LoadLevel(int levelSelect)
 	{
 		//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
-		wifstream inLevel("Level_" + to_string(levelSelect) + ".txt");
+		wifstream inLevel("../Levels/Level_" + to_string(levelSelect) + ".txt");
 		if (!inLevel) { cout << "Unable to open file." << endl; return; }
 
 		int oldWidth = nLevelWidth;
@@ -229,8 +229,7 @@ public:
 
 		//Animated
 			//Jerry
-		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Clone.png"));
-		animPlayer.mapStates["idle2"].push_back(new olc::Sprite("../Sprites/Jerry_Idle_Clone2.png"));
+		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle.png"));
 
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_1.png"));
 		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_2.png"));
@@ -622,7 +621,7 @@ public:
 		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite to 0,0 to do affine transformations
 		t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
-		t.Rotate(fPlayerPosX);
+		//t.Rotate(fPlayerPosX);
 		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + nPlayerWidth / 2, (fPlayerPosY - fOffsetY) * nTileHeight + nPlayerHeight / 2);
 
 		//SetPixelMode(olc::Pixel::ALPHA);
@@ -652,12 +651,12 @@ public:
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
 		//Game end (for now of course)
-		/*if (nPlayerScore >= 30)
+		if (nPlayerScore >= 370)
 		{
 			nPlayerScore = 0;
 
 			LoadLevel(2);
-		}*/
+		}
 
 		//Play random Jerry Sounds????
 		
