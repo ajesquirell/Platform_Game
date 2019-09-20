@@ -496,17 +496,20 @@ public:
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
 				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
 				{
-						SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
+					SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'b');
+					//SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
 				}
 
 				else if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
 				{
-					SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
+					SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'b');
+					//SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 				}
 
 				else if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
 				{
-					SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
+					SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'b');
+					//SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
 				}
 
 				/***********************************************************************************/
@@ -577,7 +580,16 @@ public:
 					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
 					break;
 
-				case L'o':
+				case L'b':
+				{
+					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+					olc::GFX2D::Transform2D brickTrans;
+					brickTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
+					animMoney.DrawSelf(this, brickTrans);
+					break;
+				}
+					
+				case COIN:
 				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
 					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
 					olc::GFX2D::Transform2D moneyTrans;
@@ -586,7 +598,7 @@ public:
 					break;
 				}
 
-				case L'1':
+				case TEST:
 				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
 					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
 					olc::GFX2D::Transform2D moneyTrans;
@@ -629,11 +641,11 @@ public:
 		//SetPixelMode(olc::Pixel::NORMAL);
 
 		//Draw Score
-		sScoreString = "Score: " + to_string(nPlayerScore);
-		DrawString(0, 0, sScoreString);
+		sScoreString = "Flames Cash: " + to_string(nPlayerScore);
+		DrawString(0, 0, sScoreString, olc::RED);
 
 		//Debug+Testing
-		/*if (GetKey(olc::Key::D).bPressed)
+		if (GetKey(olc::Key::D).bPressed)
 			if (showDebug)
 				showDebug = false;
 			else
@@ -645,9 +657,9 @@ public:
 			DrawString(0, 24, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
 			DrawString(1, 33, "X-Velocity: " + to_string(fPlayerVelX) + "\nY-Velocity: " + to_string(fPlayerVelY));
 			DrawString(1, 53, to_string(fElapsedTime));
-		}*/
+		}
 
-		DrawString(130, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
+		DrawString(140, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
 		//Game end (for now of course)
