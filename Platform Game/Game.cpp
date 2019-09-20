@@ -491,7 +491,7 @@ public:
 		if (fPlayerVelY <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY + 0.0f) != L'.')
+			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f) != L'.')
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
 				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
@@ -517,7 +517,7 @@ public:
 		}
 		else //Player moving down
 		{
-			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) != L'.' || GetTile(fNewPlayerPosX + 0.9f, fNewPlayerPosY + 1.0f) != L'.')
+			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) != L'.' || GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f) != L'.')
 			{
 				fNewPlayerPosY = (int)fNewPlayerPosY;
 				fPlayerVelY = 0;
@@ -647,7 +647,7 @@ public:
 			DrawString(1, 53, to_string(fElapsedTime));
 		}*/
 
-		DrawString(130, 0, "Jerryyyyyyyy", olc::GREY);
+		DrawString(130, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 
 		//Game end (for now of course)
