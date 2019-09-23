@@ -538,7 +538,7 @@ public:
 		fCameraPosX = fPlayerPosX;
 		fCameraPosY = fPlayerPosY;
 
-		//Draw Level
+		//Draw Level 
 		int nTileWidth = 22;
 		int nTileHeight = 22;
 		int nVisibleTilesX = ScreenWidth() / nTileWidth;
