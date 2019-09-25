@@ -5,79 +5,15 @@
 #define OLC_PGE_GRAPHICS2D
 #include "olcPGEX_Graphics2D.h"
 
+#include "Animator.h"
+#include "Maps.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
 
 using namespace std;
 
-
-class cAnimator
-{
-public:
-	std::map<std::string, std::vector<olc::Sprite*>> mapStates;
-
-public:
-	std::string sCurrentState;
-	int nCurrentFrame = 0;
-	float fTimeBetweenFrames = 0.1f; //Default
-	float fTimeCounter = 0.0f;
-	bool bAnimateOnceState = false;
-
-	cAnimator()
-	{
-		
-	}
-	cAnimator(float fTimeBetweenFrames) //Custom Constructor
-	{
-		this->fTimeBetweenFrames = fTimeBetweenFrames;
-	}
-
-	void ChangeState(std::string s)
-	{
-		if (s != sCurrentState)
-		{
-			sCurrentState = s;
-			fTimeCounter = 0;
-			nCurrentFrame = 0;
-			bAnimateOnceState = false;
-		}
-	}
-
-	void ChangeState(std::string s, bool b)
-	{
-		if (s != sCurrentState)
-		{
-			sCurrentState = s;
-			fTimeCounter = 0;
-			nCurrentFrame = 0;
-			bAnimateOnceState = b;
-		}
-	}
-
-	void Update(float fElapsedTime)
-	{
-		fTimeCounter += fElapsedTime;
-		if (fTimeCounter >= fTimeBetweenFrames)
-		{
-			fTimeCounter -= fTimeBetweenFrames;
-			nCurrentFrame++;
-			if (nCurrentFrame >= mapStates[sCurrentState].size())
-			{
-				if (bAnimateOnceState)
-					nCurrentFrame = nCurrentFrame - 1;
-				else
-					nCurrentFrame = 0;
-			}
-				
-		}
-	}
-
-	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D& t)
-	{
-		olc::GFX2D::DrawSprite(mapStates[sCurrentState][nCurrentFrame], t);
-	}
-};
 
 class Platformer : public olc::PixelGameEngine
 {
@@ -89,10 +25,11 @@ public:
 
 private:
 	//Level Storage
-	std::vector<wstring> vLevels;
+	cMap* currentMap = nullptr;
+	/*std::vector<wstring> vLevels;
 	wstring sCurrentLevel;
 	int nLevelWidth;
-	int nLevelHeight;
+	int nLevelHeight; */
 	olc::Pixel skyColor = olc::CYAN;
 
 	//Player Properties
@@ -103,6 +40,7 @@ private:
 	float fPlayerVelY = 0.0f;
 
 	bool bPlayerOnGround = false;
+	//cDynamic_Creature* m_pPlayer = nullptr;
 
 	//Camera Properties
 	float fCameraPosX = 0.0f;
@@ -152,8 +90,8 @@ public:
 	bool HandlePickup(wchar_t c) //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
 	{
 		bool success = false; //In case we add a pickup and don't implement it here, it will return false.
-		switch (c)					//Oh and this will be the logic to check for pickups, if it's not meant to be picked up and not implemented here, nothing will happen
-		{							//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
+		switch (c)			//Oh and this will be the logic to check for pickups, if it's not meant to be picked up and not implemented here, nothing will happen
+		{					//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
 		case (COIN):
 			nPlayerScore += 10;
 			olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
@@ -161,7 +99,7 @@ public:
 			break;
 
 		case (TEST):
-			skyColor = olc::DARK_YELLOW;
+			//skyColor = olc::DARK_YELLOW;
 			olc::SOUND::PlaySample(sndWuWuWu);
 			success = true;
 			break;
@@ -170,56 +108,56 @@ public:
 		return success;
 	}
 
-	void LoadLevel(int levelSelect)
-	{
-		//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
-		wifstream inLevel("../Levels/Level_" + to_string(levelSelect) + ".txt");
-		if (!inLevel) { cout << "Unable to open file." << endl; return; }
+	//void LoadLevel(int levelSelect)
+	//{
+	//	//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
+	//	wifstream inLevel("../Levels/Level_" + to_string(levelSelect) + ".txt");
+	//	if (!inLevel) { cout << "Unable to open file." << endl; return; }
 
-		int oldWidth = nLevelWidth;
-		int oldHeight = nLevelHeight;
+	//	int oldWidth = nLevelWidth;
+	//	int oldHeight = nLevelHeight;
 
-		inLevel >> nLevelWidth >> nLevelHeight;
-		if (nLevelWidth == 0 || nLevelHeight == 0) 
-		{ 
-			cout << "Ensure Level Width and Level Height are respectively defined in the first 2 lines of the level file." << endl;
-			nLevelWidth = oldWidth;
-			nLevelHeight = oldHeight;
-			return;
-		}
+	//	inLevel >> nLevelWidth >> nLevelHeight;
+	//	if (nLevelWidth == 0 || nLevelHeight == 0) 
+	//	{ 
+	//		cout << "Ensure Level Width and Level Height are respectively defined in the first 2 lines of the level file." << endl;
+	//		nLevelWidth = oldWidth;
+	//		nLevelHeight = oldHeight;
+	//		return;
+	//	}
 
-		//File should be good, read
-		wstring buffer;
-		sCurrentLevel.clear(); //Clear current level - should'nt need this but just in case
-		for (int x = 0; x < nLevelHeight; x++)
-		{
-			inLevel >> buffer;
-			if (x == 0)
-				sCurrentLevel = buffer;
-			else
-				sCurrentLevel += buffer;
-		}
+	//	//File should be good, read
+	//	wstring buffer;
+	//	sCurrentLevel.clear(); //Clear current level - should'nt need this but just in case
+	//	for (int x = 0; x < nLevelHeight; x++)
+	//	{
+	//		inLevel >> buffer;
+	//		if (x == 0)
+	//			sCurrentLevel = buffer;
+	//		else
+	//			sCurrentLevel += buffer;
+	//	}
 
-		/*int currentPos = inLevel.tellg();
-		cout << inLevel.tellg();
-		inLevel.seekg(0, inLevel.end);
-		int length = (int)inLevel.tellg() - currentPos;
-		inLevel.seekg(currentPos, inLevel.beg);
+	//	/*int currentPos = inLevel.tellg();
+	//	cout << inLevel.tellg();
+	//	inLevel.seekg(0, inLevel.end);
+	//	int length = (int)inLevel.tellg() - currentPos;
+	//	inLevel.seekg(currentPos, inLevel.beg);
 
-		wchar_t* buffer = new wchar_t[length];
-		inLevel.read(buffer, length);
+	//	wchar_t* buffer = new wchar_t[length];
+	//	inLevel.read(buffer, length);
 
-		sCurrentLevel = buffer;*/
+	//	sCurrentLevel = buffer;*/
 
-		//sCurrentLevel = vLevels[levelSelect];
-		//this->nLevelWidth = nLevelWidth;
-		//this->nLevelHeight = nLevelHeight;
-	}
+	//	//sCurrentLevel = vLevels[levelSelect];
+	//	//this->nLevelWidth = nLevelWidth;
+	//	//this->nLevelHeight = nLevelHeight;
+	//}
 
 	bool OnUserCreate() override
 	{
 		//Load level
-		LoadLevel(1);
+		//LoadLevel(1);
 
 		//Load Sprites
 
@@ -285,6 +223,11 @@ public:
 
 		olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
 
+
+		//Map
+		currentMap = new cLevel1;
+
+
 		return true;
 	}
 
@@ -321,7 +264,7 @@ public:
 		animMoney.Update(fElapsedTime);
 
 		// Utility Lambdas
-		auto GetTile = [&](int x, int y)
+		/*auto GetTile = [&](int x, int y)
 		{
 			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
 				return sCurrentLevel[y * nLevelWidth + x];
@@ -334,7 +277,7 @@ public:
 			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
 				sCurrentLevel[y * nLevelWidth + x] = c;
 		};
-
+*/
 		//fPlayerVelX = 0.0f;
 		//fPlayerVelY = 0.0f;
 
@@ -455,7 +398,7 @@ public:
 		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
 
 		//Check for pickups! 
-		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
+		/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
 			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 
 		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
@@ -465,13 +408,13 @@ public:
 			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
 
 		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f)))
-			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');
+			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');*/
 
 
 		//Collision
 		if (fPlayerVelX <= 0) //Player moving left
 		{
-			if (GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f) != L'.')  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
 			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
 				fNewPlayerPosX = (int)fNewPlayerPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
 				fPlayerVelX = 0;
@@ -479,7 +422,7 @@ public:
 		}
 		else if (fPlayerVelX > 0) //Player moving Right
 		{
-			if (GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f) != L'.')
+			if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f)->solid)
 			{
 				fNewPlayerPosX = (int)fNewPlayerPosX;
 				fPlayerVelX = 0;
@@ -491,26 +434,26 @@ public:
 		if (fPlayerVelY <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) != L'.' || GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f) != L'.')
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f)->solid)
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
-				if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
-				{
-					SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'b');
-					//SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
-				}
+				//if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
+				//{
+				//	SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'b');
+				//	//SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
+				//}
 
-				else if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
-				{
-					SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'b');
-					//SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
-				}
+				//else if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
+				//{
+				//	SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'b');
+				//	//SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
+				//}
 
-				else if (GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
-				{
-					SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'b');
-					//SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
-				}
+				//else if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
+				//{
+				//	SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'b');
+				//	//SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
+				//}
 
 				/***********************************************************************************/
 
@@ -520,7 +463,7 @@ public:
 		}
 		else //Player moving down
 		{
-			if (GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f) != L'.' || GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f) != L'.')
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f)->solid)
 			{
 				fNewPlayerPosY = (int)fNewPlayerPosY;
 				fPlayerVelY = 0;
@@ -551,8 +494,8 @@ public:
 		//Clamp camera to game boundaries
 		if (fOffsetX < 0) fOffsetX = 0;
 		if (fOffsetY < 0) fOffsetY = 0;
-		if (fOffsetX > nLevelWidth - nVisibleTilesX) fOffsetX = nLevelWidth - nVisibleTilesX;
-		if (fOffsetY > nLevelHeight - nVisibleTilesY) fOffsetY = nLevelHeight - nVisibleTilesY;
+		if (fOffsetX > currentMap->nWidth - nVisibleTilesX) fOffsetX = currentMap->nWidth - nVisibleTilesX;
+		if (fOffsetY > currentMap->nHeight - nVisibleTilesY) fOffsetY = currentMap->nHeight - nVisibleTilesY;
 
 		// Get offsets for smooth movement
 		float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
@@ -563,63 +506,72 @@ public:
 		{
 			for (int y = -1; y < nVisibleTilesY + 1; y++)
 			{
-				wchar_t sTileID = GetTile(x + fOffsetX, y + fOffsetY);
-				switch (sTileID)
-				{
-				case L'.': // Sky
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-					break;
+				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				cTile* outputTile = currentMap->GetTile(x + fOffsetX, y + fOffsetY);
+				//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, currentMap->GetTile(x + fOffsetX, y + fOffsetY)->GetCurrentFrame());
+				olc::GFX2D::Transform2D t;
+				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
+				outputTile->DrawSelf(this, t);
+				
+				//switch (sTileID)
+				//{
+				//case L'.': // Sky
+				//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				//	break;
 
-				case L'F': //Floor
-					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
-					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteFloor);
-					break;
+				//case "floor": //Floor
+				//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
+				//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteFloor);
+				//	break;
 
-				case L'B':
-					//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
-					DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
-					break;
+				//case L'B':
+				//	//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
+				//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
+				//	break;
 
-				case L'b':
-				{
-					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-					olc::GFX2D::Transform2D brickTrans;
-					brickTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-					animMoney.DrawSelf(this, brickTrans);
-					break;
-				}
-					
-				case COIN:
-				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-					olc::GFX2D::Transform2D moneyTrans;
-					moneyTrans.Translate(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
-					animMoney.DrawSelf(this, moneyTrans);
-					break;
-				}
+				//case L'b':
+				//{
+				//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				//	
+				//	tile.animTile.Update(fElapsedTime);
+				//	//olc::GFX2D::Transform2D brickTrans;
+				//	//brickTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
+				//	//animMoney.DrawSelf(this, brickTrans);
+				//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, tile.GetCurrentFrame());
+				//	break;
+				//}
+				//	
+				//case COIN:
+				//{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
+				//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				//	olc::GFX2D::Transform2D moneyTrans;
+				//	moneyTrans.Translate(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
+				//	animMoney.DrawSelf(this, moneyTrans);
+				//	break;
+				//}
 
-				case TEST:
-				{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-					FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-					olc::GFX2D::Transform2D moneyTrans;
-					moneyTrans.Translate(-nTileWidth / 2, -nTileHeight / 2);
-					moneyTrans.Rotate(fPlayerVelY);
-					moneyTrans.Scale(fFaceDir, 1.0f);
-					moneyTrans.Translate(x * nTileWidth - fTileOffsetX + nTileWidth / 2, y * nTileHeight - fTileOffsetY + nTileHeight / 2);
+				//case TEST:
+				//{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
+				//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				//	olc::GFX2D::Transform2D moneyTrans;
+				//	moneyTrans.Translate(-nTileWidth / 2, -nTileHeight / 2);
+				//	moneyTrans.Rotate(fPlayerVelY);
+				//	moneyTrans.Scale(fFaceDir, 1.0f);
+				//	moneyTrans.Translate(x * nTileWidth - fTileOffsetX + nTileWidth / 2, y * nTileHeight - fTileOffsetY + nTileHeight / 2);
 
-					animMoney.DrawSelf(this, moneyTrans);
-					break;
-				}
+				//	animMoney.DrawSelf(this, moneyTrans);
+				//	break;
+				//}
 
-				case L'P':
-					fPlayerPosX = x + fOffsetX;
-					fPlayerPosY = y + fOffsetY;
-					SetTile(x + fOffsetX, y + fOffsetY, L'.');
+				//case L'P':
+				//	fPlayerPosX = x + fOffsetX;
+				//	fPlayerPosY = y + fOffsetY;
+				//	SetTile(x + fOffsetX, y + fOffsetY, L'.');
 
-				default:
-					FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::BLACK);
-					break;
-				}
+				//default:
+				//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::BLACK);
+				//	break;
+				//}
 			}
 		}
 
@@ -667,7 +619,7 @@ public:
 		{
 			nPlayerScore = 0;
 
-			LoadLevel(2);
+			//LoadLevel(2);
 		}
 
 		//Play random Jerry Sounds????
