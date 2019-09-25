@@ -1,13 +1,14 @@
 #pragma once
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_Graphics2D.h"
-#include "olcPGEX_Sound.h"
+//#include "olcPGEX_Sound.h"
 #include "Animator.h"
 
 class cTile
 {
 public:
 	cTile(std::string tileName);
+	cTile();
 
 public:
 	std::string sName;

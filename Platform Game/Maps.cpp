@@ -7,49 +7,44 @@ cMap::cMap()
 {
 	nWidth = 0;
 	nHeight = 0;
-	solids = nullptr;
-	indicies = nullptr;
-	breakables = nullptr;
+	tiles = nullptr;
 }
 
 cMap::~cMap()
 {
-	delete[] solids;
-	delete[] indicies;
-	delete[] breakables;
+	delete[] tiles;
 }
 
-cTile* cMap::GetTile(int x, int y)
+cTile cMap::GetTile(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return vTiles[y * nWidth + x];
-	else
-		return nullptr;
+		return tiles[y * nWidth + x];
+	//else
+		//return nullptr;
 }
 
 void cMap::SetTile(int x, int y, cTile* t)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		vTiles[y * nWidth + x] = t;
-}
-
-//To be deleted...
-int cMap::GetTileIndex(int x, int y)
-{
-	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return indicies[y * nWidth + x];
-	else
-		return 0;
+		tiles[y * nWidth + x] = *t;
 }
 
 bool cMap::GetSolid(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return vTiles[y * nWidth + x]->solid;
+		return tiles[y * nWidth + x].solid;
 	else
-		return true;
+		return true; //Default will be solid
 }
-//////////////////////////////////////
+
+bool cMap::GetBreakable(int x, int y)
+{
+	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
+		return tiles[y * nWidth + x].solid;
+	else
+		return false; //Default will be non-breakable
+}
+
 
 bool cMap::Create(std::string fileName, std::string name)
 {
@@ -72,42 +67,37 @@ bool cMap::Create(std::string fileName, std::string name)
 		}
 
 		//File should be good, read
-		indicies = new int[nWidth * nHeight];
-		solids = new bool[nWidth * nHeight];
-		breakables = new bool[nWidth * nHeight];
+		tiles = new cTile[(uint8_t)nWidth * nHeight];
 
 		char buffer[1];
 		int x = 0;
-		//for (int x = 0; x < nWidth * nHeight; x++)
-		while(!inFile.eof())
+		for (int x = 0; x < nWidth * nHeight; x++)
+		//while(!inFile.eof())
 		{
+			cTile* temp;
 			//if(inFile.peek() != '\n' || '\r')
 				inFile.read(buffer, 1);
 			switch (*buffer)
 			{
 			case L'.':
-				indicies[x] = 0;
-				solids[x] = 0;
-				breakables[x] = 0;
-				vTiles.push_back(new cTile_Sky);
+				temp = new cTile_Sky;
+				tiles[x] = *temp;
 				break;
 			case L'F':
-				indicies[x] = 1;
-				solids[x] = 1;
-				breakables[x] = 0;
-				vTiles.push_back(new cTile_Floor);
+				temp = new cTile_Floor;
+				tiles[x] = *temp;
 				break;
 			case L'B':
-				indicies[x] = 2;
-				solids[x] = 1;
-				breakables[x] = 1;
-				vTiles.push_back(new cTile_Brick);
+				temp = new cTile_Brick;
+				tiles[x] = *temp;
 				break;
 
 				//Could implement way to add dynamic things like items to the map from here, so we can put them in when designing level, and not have to input specific coords for every coin, for example
 				//Dynamically create new Tile, and add to vTiles vector
+
+				//To implement a KV pair/ map for each level based on a file, we could use a Factory method for dynamically allocating types of objects. This code would be shorter, as the case statements would be in the factory method
 			}
-			x++;
+			//x++;
 		}
 
 		return true;
