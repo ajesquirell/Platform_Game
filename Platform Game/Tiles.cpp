@@ -44,6 +44,8 @@ cTile_Sky::cTile_Sky() : cTile("sky")
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void cTile_Sky::DrawSelf(olc::PixelGameEngine* pge, float sx, float sy, olc::Pixel skyColor)
 {
 	pge->FillRect(sx, sy, nTileWidth, nTileHeight, skyColor);

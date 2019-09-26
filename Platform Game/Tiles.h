@@ -12,7 +12,7 @@ public:
 
 public:
 	std::string sName;
-	bool solid = true;     //Make some of these private?
+	bool solid = false;     //Make some of these private?
 	bool breakable = false;
 
 	cAnimator animTile;

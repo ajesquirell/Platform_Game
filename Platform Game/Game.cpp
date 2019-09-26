@@ -511,7 +511,10 @@ public:
 				//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, currentMap->GetTile(x + fOffsetX, y + fOffsetY)->GetCurrentFrame());
 				olc::GFX2D::Transform2D t;
 				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-				outputTile->DrawSelf(this, t);
+				if (outputTile != nullptr)
+					outputTile->DrawSelf(this, t);
+
+				//This could probably be a DrawMap function so we don't have to interact with the tiles directly
 				
 				//switch (sTileID)
 				//{

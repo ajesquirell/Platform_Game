@@ -20,7 +20,7 @@ cTile* cMap::GetTile(int x, int y)
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
 		return tiles[y * nWidth + x];
 	else
-		return nullptr;
+		return new cTile_Floor;
 }
 
 void cMap::SetTile(int x, int y, cTile* t)
@@ -97,12 +97,9 @@ bool cMap::Create(std::string fileName, std::string name)
 		}*/
 
 		//Loop for testing
-		for (int x = 0; x < nHeight; x++)
+		for (int x = 0; x < nHeight * nWidth; x++)
 		{
-			for (int y = 0; y < nWidth; y++)
-			{
-				tiles[y * nWidth + x] = new cTile_Sky;
-			}
+				tiles[x] = new cTile_Floor;
 		}
 
 		return true;
