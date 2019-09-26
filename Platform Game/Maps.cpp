@@ -15,24 +15,24 @@ cMap::~cMap()
 	delete[] tiles;
 }
 
-cTile cMap::GetTile(int x, int y)
+cTile* cMap::GetTile(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
 		return tiles[y * nWidth + x];
-	//else
-		//return nullptr;
+	else
+		return nullptr;
 }
 
 void cMap::SetTile(int x, int y, cTile* t)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		tiles[y * nWidth + x] = *t;
+		tiles[y * nWidth + x] = t;
 }
 
 bool cMap::GetSolid(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return tiles[y * nWidth + x].solid;
+		return tiles[y * nWidth + x]->solid;
 	else
 		return true; //Default will be solid
 }
@@ -40,7 +40,7 @@ bool cMap::GetSolid(int x, int y)
 bool cMap::GetBreakable(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return tiles[y * nWidth + x].solid;
+		return tiles[y * nWidth + x]->solid;
 	else
 		return false; //Default will be non-breakable
 }
@@ -67,37 +67,42 @@ bool cMap::Create(std::string fileName, std::string name)
 		}
 
 		//File should be good, read
-		tiles = new cTile[(uint8_t)nWidth * nHeight];
+		tiles = new cTile*[(uint8_t)nWidth * nHeight];
 
 		char buffer[1];
 		int x = 0;
-		for (int x = 0; x < nWidth * nHeight; x++)
+		/*for (int x = 0; x < nWidth * nHeight; x++)
 		//while(!inFile.eof())
 		{
-			cTile* temp;
 			//if(inFile.peek() != '\n' || '\r')
 				inFile.read(buffer, 1);
 			switch (*buffer)
 			{
 			case L'.':
-				temp = new cTile_Sky;
-				tiles[x] = *temp;
+				tiles[x] = new cTile_Sky;
 				break;
 			case L'F':
-				temp = new cTile_Floor;
-				tiles[x] = *temp;
+				tiles[x] = new cTile_Floor;;
 				break;
 			case L'B':
-				temp = new cTile_Brick;
-				tiles[x] = *temp;
+				tiles[x] = new cTile_Brick;
 				break;
 
 				//Could implement way to add dynamic things like items to the map from here, so we can put them in when designing level, and not have to input specific coords for every coin, for example
 				//Dynamically create new Tile, and add to vTiles vector
 
-				//To implement a KV pair/ map for each level based on a file, we could use a Factory method for dynamically allocating types of objects. This code would be shorter, as the case statements would be in the factory method
+				//To implement a KV pair/map for each level based on a file, we could use a Factory method for dynamically allocating types of objects. This code would be shorter, as the case statements would be in the factory method
 			}
 			//x++;
+		}*/
+
+		//Loop for testing
+		for (int x = 0; x < nHeight; x++)
+		{
+			for (int y = 0; y < nWidth; y++)
+			{
+				tiles[y * nWidth + x] = new cTile_Sky;
+			}
 		}
 
 		return true;

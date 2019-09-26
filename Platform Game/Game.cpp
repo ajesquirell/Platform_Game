@@ -414,7 +414,7 @@ public:
 		//Collision
 		if (fPlayerVelX <= 0) //Player moving left
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f).solid || currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f).solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
 			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
 				fNewPlayerPosX = (int)fNewPlayerPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
 				fPlayerVelX = 0;
@@ -422,7 +422,7 @@ public:
 		}
 		else if (fPlayerVelX > 0) //Player moving Right
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f).solid || currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f).solid)
+			if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f)->solid)
 			{
 				fNewPlayerPosX = (int)fNewPlayerPosX;
 				fPlayerVelX = 0;
@@ -434,7 +434,7 @@ public:
 		if (fPlayerVelY <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f).solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f).solid)
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f)->solid)
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
 				//if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
@@ -463,7 +463,7 @@ public:
 		}
 		else //Player moving down
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f).solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f).solid)
+			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f)->solid)
 			{
 				fNewPlayerPosY = (int)fNewPlayerPosY;
 				fPlayerVelY = 0;
@@ -507,11 +507,11 @@ public:
 			for (int y = -1; y < nVisibleTilesY + 1; y++)
 			{
 				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-				cTile outputTile = currentMap->GetTile(x + fOffsetX, y + fOffsetY);
+				cTile* outputTile = currentMap->GetTile(x + fOffsetX, y + fOffsetY);
 				//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, currentMap->GetTile(x + fOffsetX, y + fOffsetY)->GetCurrentFrame());
 				olc::GFX2D::Transform2D t;
 				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-				outputTile.DrawSelf(this, t);
+				outputTile->DrawSelf(this, t);
 				
 				//switch (sTileID)
 				//{

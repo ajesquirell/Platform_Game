@@ -15,7 +15,7 @@ public:
 	std::string sName;
 	
 
-	cTile GetTile(int x, int y);
+	cTile* GetTile(int x, int y);
 	void SetTile(int x, int y, cTile* t);
 
 	bool GetSolid(int x, int y);
@@ -24,7 +24,7 @@ public:
 	bool Create(std::string fileName, std::string name);
 
 private:
-	cTile* tiles = nullptr;						//Going to be an array of pointers to tiles
+	cTile** tiles = nullptr;						//Going to be an array of pointers to tiles
 };
 
 
