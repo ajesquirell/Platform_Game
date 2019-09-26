@@ -513,7 +513,7 @@ public:
 				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
 				outputTile->DrawSelf(this, t);
 
-				//This could probably be a DrawMap function so we don't have to interact with the tiles directly
+				//This could probably be a currentMap->DrawTile(this) function so we don't have to interact with the tiles directly
 				
 				//switch (sTileID)
 				//{
