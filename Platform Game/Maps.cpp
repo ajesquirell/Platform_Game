@@ -20,7 +20,7 @@ cTile* cMap::GetTile(int x, int y)
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
 		return tiles[y * nWidth + x];
 	else
-		return new cTile_Floor;
+		return new cTile_Invisible_Boundary;
 }
 
 void cMap::SetTile(int x, int y, cTile* t)
@@ -67,7 +67,7 @@ bool cMap::Create(std::string fileName, std::string name)
 		}
 
 		//File should be good, read
-		tiles = new cTile*[(uint8_t)nWidth * nHeight];
+		tiles = new cTile*[(uint16_t)nWidth * (uint8_t)nHeight];
 
 		char buffer[1];
 		int x = 0;
@@ -87,6 +87,9 @@ bool cMap::Create(std::string fileName, std::string name)
 			case L'B':
 				tiles[x] = new cTile_Brick;
 				break;
+			default:
+				tiles[x] = new cTile_Invisible_Boundary;
+				break;
 
 				//Could implement way to add dynamic things like items to the map from here, so we can put them in when designing level, and not have to input specific coords for every coin, for example
 				//Dynamically create new Tile, and add to vTiles vector
@@ -99,7 +102,7 @@ bool cMap::Create(std::string fileName, std::string name)
 		//Loop for testing
 		for (int x = 0; x < nHeight * nWidth; x++)
 		{
-				tiles[x] = new cTile_Floor;
+				tiles[x] = new cTile_Sky;
 		}
 
 		return true;

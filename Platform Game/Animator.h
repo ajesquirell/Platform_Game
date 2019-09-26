@@ -65,6 +65,7 @@ public:
 
 	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D& t)
 	{
-		olc::GFX2D::DrawSprite(mapStates[sCurrentState][nCurrentFrame], t);
+		if (mapStates.size() > 0) //Ensures we do not try to access a vector that has not been initialized - that's a fatal error
+			olc::GFX2D::DrawSprite(mapStates[sCurrentState][nCurrentFrame], t);
 	}
 };

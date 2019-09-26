@@ -506,13 +506,12 @@ public:
 		{
 			for (int y = -1; y < nVisibleTilesY + 1; y++)
 			{
-				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
+				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor); //Background fill
 				cTile* outputTile = currentMap->GetTile(x + fOffsetX, y + fOffsetY);
 				//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, currentMap->GetTile(x + fOffsetX, y + fOffsetY)->GetCurrentFrame());
 				olc::GFX2D::Transform2D t;
 				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-				if (outputTile != nullptr)
-					outputTile->DrawSelf(this, t);
+				outputTile->DrawSelf(this, t);
 
 				//This could probably be a DrawMap function so we don't have to interact with the tiles directly
 				

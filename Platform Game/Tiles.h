@@ -7,12 +7,11 @@
 class cTile
 {
 public:
-	cTile(std::string tileName);
-	cTile();
+	cTile(std::string tileName, bool solid, bool breakable);
 
 public:
 	std::string sName;
-	bool solid = false;     //Make some of these private?
+	bool solid = true;     //Make some of these private?
 	bool breakable = false;
 
 	cAnimator animTile;
@@ -44,4 +43,10 @@ class cTile_Sky : public cTile
 public:
 	cTile_Sky();
 	void DrawSelf(olc::PixelGameEngine* pge, float sx, float sy, olc::Pixel skyColor);
+};
+
+class cTile_Invisible_Boundary : public cTile //Returned by GetTile function if accessing something outside of map boundaries - Makes objects not able to fall out of world
+{
+public:
+	cTile_Invisible_Boundary();
 };

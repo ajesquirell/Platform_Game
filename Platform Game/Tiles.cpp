@@ -2,9 +2,11 @@
 
 using namespace std;
 
-cTile::cTile(string tileName)
+cTile::cTile(string tileName, bool solid, bool breakable)
 {
 	sName = tileName;
+	this->solid = solid;
+	this->breakable = breakable;
 }
 
 olc::Sprite* cTile::GetCurrentFrame()
@@ -24,7 +26,7 @@ void cTile::DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D& t)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-cTile_Floor::cTile_Floor() : cTile("floor")
+cTile_Floor::cTile_Floor() : cTile("floor", true, false)
 {
 	animTile.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Floor.png"));
 	animTile.ChangeState("normal");
@@ -32,7 +34,7 @@ cTile_Floor::cTile_Floor() : cTile("floor")
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-cTile_Brick::cTile_Brick() : cTile("brick")
+cTile_Brick::cTile_Brick() : cTile("brick", true, true)
 {
 	animTile.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Brick.png"));
 	animTile.ChangeState("normal");
@@ -40,13 +42,19 @@ cTile_Brick::cTile_Brick() : cTile("brick")
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-cTile_Sky::cTile_Sky() : cTile("sky")
+cTile_Sky::cTile_Sky() : cTile("sky", false, false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+cTile_Invisible_Boundary::cTile_Invisible_Boundary() : cTile("invisble_wall", true, false)
+{
+}
+
 void cTile_Sky::DrawSelf(olc::PixelGameEngine* pge, float sx, float sy, olc::Pixel skyColor)
 {
 	pge->FillRect(sx, sy, nTileWidth, nTileHeight, skyColor);
 }
+
+
