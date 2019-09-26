@@ -7,7 +7,7 @@ cMap::cMap()
 {
 	nWidth = 0;
 	nHeight = 0;
-	tiles = nullptr;
+	//tiles = nullptr;
 }
 
 cMap::~cMap()
@@ -18,7 +18,12 @@ cMap::~cMap()
 cTile* cMap::GetTile(int x, int y)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return tiles[y * nWidth + x];
+	{
+		if (tiles[y * nWidth + x] != nullptr)
+			return tiles[y * nWidth + x];
+		else
+			return new cTile_Invisible_Boundary; //Just in case something goes wrong and a tile is still nullptr
+	}
 	else
 		return new cTile_Invisible_Boundary;
 }
@@ -66,53 +71,65 @@ bool cMap::Create(std::string fileName, std::string name)
 			return false;
 		}
 
+
 		//File should be good, read
-		tiles = new cTile*[(uint8_t)nWidth * (uint8_t)nHeight];
+		tiles = new cTile*[nWidth * nHeight];
 
-		char buffer;
-		int x = 0;
 		for (int x = 0; x < nWidth * nHeight; x++)
-		//while(inFile.good())
 		{
-			if (!isspace(inFile.peek()))
-				inFile.get(buffer);
-			else
-				inFile.ignore();
-
-			switch (buffer)
-			{
-			case L'.':
-				tiles[x] = new cTile_Sky;
-				break;
-			case L'F':
-				tiles[x] = new cTile_Floor;;
-				break;
-			case L'B':
-				tiles[x] = new cTile_Brick;
-				break;
-			case L'o':
-				tiles[x] = new cTile_Brick;
-				break;
-			case L'1':
-				tiles[x] = new cTile_Brick;
-				break;
-			default:
-				tiles[x] = new cTile_Invisible_Boundary;
-				break;
-			}
-				//Could implement way to add dynamic things like items to the map from here, so we can put them in when designing level, and not have to input specific coords for every coin, for example
-				//Dynamically create new Tile, and add to vTiles vector
-
-				//To implement a KV pair/map for each level based on a file, we could use a Factory method for dynamically allocating types of objects. This code would be shorter, as the case statements would be in the factory method
-			
-			//x++;
+			tiles[x] = nullptr; //Initialize array to nullptr's - So if we don't initialize every tile of the level, we can check for that after file read, and also when accessing this array through GetTile
 		}
 
-		//Loop for testing
-		/*for (int x = 0; x < nHeight * nWidth; x++)
+		//Read into a string first using >> so that we don't get whitespace in the way
+		string s;
+		for (int y = 0; y < nHeight; y++)
 		{
-				tiles[x] = new cTile_Sky;
-		}*/
+			inFile >> s;
+			for (int x = 0; x < nWidth; x++)
+			{
+				cout << s[x]; //TEST,DEBUG print out what it's doing
+				switch (s[x])
+				{
+				case '.':
+					tiles[y * nWidth + x] = new cTile_Sky;
+					break;
+				case 'F':
+					tiles[y * nWidth + x] = new cTile_Floor;;
+					break;
+				case 'B':
+					tiles[y * nWidth + x] = new cTile_Brick;
+					break;
+				case 'o':
+					tiles[y* nWidth + x] = new cTile_Brick;
+					break;
+				case '1':
+					tiles[y * nWidth + x] = new cTile_Brick;
+					break;
+				default:
+					tiles[y * nWidth + x] = new cTile_Invisible_Boundary;
+					break;
+				}
+			}
+			cout << endl; //TEST, DEBUG
+		}
+
+		//Could implement way to add dynamic things like items to the map from here, so we can put them in when designing level, and not have to input specific coords for every coin, for example
+		//Dynamically create new Tile, and add to vTiles vector
+
+		//To implement a KV pair/map for each level based on a file, we could use a Factory method for dynamically allocating types of objects. This code would be shorter, as the case statements would be in the factory method
+
+
+
+
+		//Check entire tiles array was filled
+		for (int x = 0; x < nWidth * nHeight; x++)
+		{
+			if (tiles[x] == nullptr)
+			{
+				cerr << "Error: Not all elements of tiles array for the level are initialized.";
+				return false;
+			}
+		}
 
 		inFile.close();
 		return true;
@@ -128,5 +145,6 @@ bool cMap::Create(std::string fileName, std::string name)
 
 cLevel1::cLevel1()
 {
-	Create("../Levels/level_1.txt", "Level 1");
+	if (Create("../Levels/level_1.txt", "Level 1"))
+		cout << "File loaded successfully";
 }
