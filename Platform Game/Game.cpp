@@ -107,7 +107,7 @@ public:
 	bool OnUserCreate() override
 	{
 		//Load Sprites
-		//Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
+		Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 
 		//Animated
 			//Jerry

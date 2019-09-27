@@ -25,6 +25,11 @@ public:
 
 private:
 	cTile** tiles = nullptr;	//Going to be an array of pointers to tiles
+
+	cTile_Invisible_Boundary* staticBoundary; //Need to return this to prevent memory leak if accessing out of bounds, b/c before
+												//we were returning a new cTile_Invisible_Boundary every time the edge of the screen was
+												//being drawn (Probably because we 'lazily' overdraw the screen to prevent artifacts.
+												//This was causing memory to rapidly increase whenever the camera was on the edge of the screen
 };
 
 
