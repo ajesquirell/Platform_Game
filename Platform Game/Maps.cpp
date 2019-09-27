@@ -22,10 +22,10 @@ cTile* cMap::GetTile(int x, int y)
 		if (tiles[y * nWidth + x] != nullptr)
 			return tiles[y * nWidth + x];
 		else
-			return new cTile_Invisible_Boundary; //Just in case something goes wrong and a tile is still nullptr
+			return staticBoundary; //Just in case something goes wrong and a tile is still nullptr
 	}
 	else
-		return new cTile_Invisible_Boundary;
+		return staticBoundary;
 }
 
 void cMap::SetTile(int x, int y, cTile* t)
