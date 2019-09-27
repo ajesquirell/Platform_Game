@@ -3,6 +3,7 @@
 #include "olcPGEX_Graphics2D.h"
 //#include "olcPGEX_Sound.h"
 #include "Animator.h"
+#include "Assets.h"
 
 class cTile
 {

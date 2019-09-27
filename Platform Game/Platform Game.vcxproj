@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Maps.cpp" />
     <ClCompile Include="Tiles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animator.h" />
+    <ClInclude Include="Assets.h" />
     <ClInclude Include="Maps.h" />
     <ClInclude Include="olcPGEX_Graphics2D.h" />
     <ClInclude Include="olcPGEX_Sound.h" />

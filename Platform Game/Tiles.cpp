@@ -31,7 +31,7 @@ void cTile::DrawSelf(olc::PixelGameEngine* pge, float screenPosX, float screenPo
 
 cTile_Floor::cTile_Floor() : cTile("floor", true, false)
 {
-	animTile.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Floor.png"));
+	animTile.mapStates["normal"].push_back(Assets::get().GetSprite("Floor"));
 	animTile.ChangeState("normal");
 }
 
@@ -39,7 +39,7 @@ cTile_Floor::cTile_Floor() : cTile("floor", true, false)
 
 cTile_Brick::cTile_Brick() : cTile("brick", true, true)
 {
-	animTile.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Brick.png"));
+	animTile.mapStates["normal"].push_back(Assets::get().GetSprite("Brick"));
 	animTile.ChangeState("normal");
 }
 

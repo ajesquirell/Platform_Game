@@ -5,6 +5,7 @@
 #define OLC_PGE_GRAPHICS2D
 #include "olcPGEX_Graphics2D.h"
 
+#include "Assets.h"
 #include "Animator.h"
 #include "Maps.h"
 
@@ -106,49 +107,46 @@ public:
 	bool OnUserCreate() override
 	{
 		//Load Sprites
-
-		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
-		spriteFloor = new olc::Sprite("../Sprites/Floor.png");
-		spriteTEST = new olc::Sprite("../Sprites/Piskel.png");
+		//Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 
 		//Animated
 			//Jerry
-		animPlayer.mapStates["idle"].push_back(new olc::Sprite("../Sprites/Jerry_Idle.png"));
+		animPlayer.mapStates["idle"].push_back(Assets::get().GetSprite("Jerry_Idle"));
 
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_1.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_2.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_3.png"));
-		animPlayer.mapStates["run"].push_back(new olc::Sprite("../Sprites/Jerry_Run_4.png"));
+		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_1"));
+		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_2"));
+		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_3"));
+		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_4"));
 
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_1.png"));
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_2.png"));
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_3.png"));
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_4.png"));
-		animPlayer.mapStates["brake"].push_back(new olc::Sprite("../Sprites/Jerry_Brake_5.png"));
+		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_1"));
+		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_2"));
+		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_3"));
+		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_4"));
+		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_5"));
 
-		animPlayer.mapStates["squat"].push_back(new olc::Sprite("../Sprites/Jerry_Squat.png"));
+		animPlayer.mapStates["squat"].push_back(Assets::get().GetSprite("Jerry_Squat"));
 
-		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_1.png"));
-		animPlayer.mapStates["jump"].push_back(new olc::Sprite("../Sprites/Jerry_Jump_2.png"));
+		animPlayer.mapStates["jump"].push_back(Assets::get().GetSprite("Jerry_Jump_1"));
+		animPlayer.mapStates["jump"].push_back(Assets::get().GetSprite("Jerry_Jump_2"));
 
 		
-		animPlayer.mapStates["fall"].push_back(new olc::Sprite("../Sprites/Jerry_Fall.png"));
+		animPlayer.mapStates["fall"].push_back(Assets::get().GetSprite("Jerry_Fall"));
 			
 			//Money
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_00.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_01.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_02.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_03.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_04.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_05.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_06.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_07.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_08.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_09.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_10.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_11.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_12.png"));
-		animMoney.mapStates["normal"].push_back(new olc::Sprite("../Sprites/Money/Money_13.png"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_00"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_01"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_02"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_03"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_04"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_05"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_06"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_07"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_08"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_09"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_10"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_11"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_12"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_13"));
 
 		//Set initial animated states
 		animPlayer.ChangeState("idle");
