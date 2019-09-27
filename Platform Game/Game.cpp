@@ -133,20 +133,20 @@ public:
 		animPlayer.mapStates["fall"].push_back(Assets::get().GetSprite("Jerry_Fall"));
 			
 			//Money
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_00"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_01"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_02"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_03"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_04"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_05"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_06"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_07"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_08"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_09"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_10"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_11"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_12"));
-		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money/Money_13"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_00"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_01"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_02"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_03"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_04"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_05"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_06"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_07"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_08"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_09"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_10"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_11"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_12"));
+		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_13"));
 
 		//Set initial animated states
 		animPlayer.ChangeState("idle");
