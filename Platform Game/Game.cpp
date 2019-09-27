@@ -26,11 +26,6 @@ public:
 private:
 	//Level Storage
 	cMap* currentMap = nullptr;
-	/*std::vector<wstring> vLevels;
-	wstring sCurrentLevel;
-	int nLevelWidth;
-	int nLevelHeight; */
-	olc::Pixel skyColor = olc::CYAN;
 
 	//Player Properties
 	float fPlayerPosX = 0.0f;
@@ -108,57 +103,8 @@ public:
 		return success;
 	}
 
-	//void LoadLevel(int levelSelect)
-	//{
-	//	//Load from file nLevelWidth, nLevelHeight, sCurrentLevel
-	//	wifstream inLevel("../Levels/Level_" + to_string(levelSelect) + ".txt");
-	//	if (!inLevel) { cout << "Unable to open file." << endl; return; }
-
-	//	int oldWidth = nLevelWidth;
-	//	int oldHeight = nLevelHeight;
-
-	//	inLevel >> nLevelWidth >> nLevelHeight;
-	//	if (nLevelWidth == 0 || nLevelHeight == 0) 
-	//	{ 
-	//		cout << "Ensure Level Width and Level Height are respectively defined in the first 2 lines of the level file." << endl;
-	//		nLevelWidth = oldWidth;
-	//		nLevelHeight = oldHeight;
-	//		return;
-	//	}
-
-	//	//File should be good, read
-	//	wstring buffer;
-	//	sCurrentLevel.clear(); //Clear current level - should'nt need this but just in case
-	//	for (int x = 0; x < nLevelHeight; x++)
-	//	{
-	//		inLevel >> buffer;
-	//		if (x == 0)
-	//			sCurrentLevel = buffer;
-	//		else
-	//			sCurrentLevel += buffer;
-	//	}
-
-	//	/*int currentPos = inLevel.tellg();
-	//	cout << inLevel.tellg();
-	//	inLevel.seekg(0, inLevel.end);
-	//	int length = (int)inLevel.tellg() - currentPos;
-	//	inLevel.seekg(currentPos, inLevel.beg);
-
-	//	wchar_t* buffer = new wchar_t[length];
-	//	inLevel.read(buffer, length);
-
-	//	sCurrentLevel = buffer;*/
-
-	//	//sCurrentLevel = vLevels[levelSelect];
-	//	//this->nLevelWidth = nLevelWidth;
-	//	//this->nLevelHeight = nLevelHeight;
-	//}
-
 	bool OnUserCreate() override
 	{
-		//Load level
-		//LoadLevel(1);
-
 		//Load Sprites
 
 		spriteBrick = new olc::Sprite("../Sprites/Brick.png");
@@ -506,15 +452,9 @@ public:
 		{
 			for (int y = -1; y < nVisibleTilesY + 1; y++)
 			{
-				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor); //Background fill
-				cTile* outputTile = currentMap->GetTile(x + fOffsetX, y + fOffsetY);
-				//DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, currentMap->GetTile(x + fOffsetX, y + fOffsetY)->GetCurrentFrame());
-				olc::GFX2D::Transform2D t;
-				t.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-				outputTile->DrawSelf(this, t);
+				FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, currentMap->skyColor); //Background fill -- "sky"
+				currentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
 
-				//This could probably be a currentMap->DrawTile(this) function so we don't have to interact with the tiles directly
-				
 				//switch (sTileID)
 				//{
 				//case L'.': // Sky

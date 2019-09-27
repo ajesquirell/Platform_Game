@@ -9,15 +9,15 @@ public:
 	~cMap();
 
 public:
-	int nWidth;
+	int nWidth; //Of Map
 	int nHeight;
+
 	olc::Pixel skyColor = olc::CYAN;
 	std::string sName;
 	
 
 	cTile* GetTile(int x, int y);
 	void SetTile(int x, int y, cTile* t);
-
 	bool GetSolid(int x, int y);
 	bool GetBreakable(int x, int y);
 
