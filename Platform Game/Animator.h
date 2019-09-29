@@ -1,6 +1,7 @@
 #pragma once
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_Graphics2D.h"
+#include <iostream>
 
 class cAnimator
 {
@@ -27,7 +28,8 @@ public:
 	{
 		if (s != sCurrentState)
 		{
-			sCurrentState = s;
+			if (mapStates[s].size() != 0) //Check that that state has been initialized (prevent access to uninitialized vector (null/garbage data - error))
+				sCurrentState = s;
 			fTimeCounter = 0;
 			nCurrentFrame = 0;
 			bAnimateOnceState = false;
@@ -38,7 +40,8 @@ public:
 	{
 		if (s != sCurrentState)
 		{
-			sCurrentState = s;
+			if (mapStates[s].size() != 0) //Check that that state has been initialized (prevent access to uninitialized vector (null/garbage data - error))
+				sCurrentState = s;
 			fTimeCounter = 0;
 			nCurrentFrame = 0;
 			bAnimateOnceState = b;
