@@ -9,6 +9,8 @@
 #include "Animator.h"
 #include "Maps.h"
 
+#include "Dynamic_Creature.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -204,7 +206,7 @@ public:
 
 		nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
 		nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
-		animPlayer.Update(fElapsedTime);
+		//animPlayer.Update(fElapsedTime);
 		animMoney.Update(fElapsedTime);
 
 		// Utility Lambdas
@@ -225,6 +227,7 @@ public:
 		//fPlayerVelX = 0.0f;
 		//fPlayerVelY = 0.0f;
 
+
 		//Handle Input
 		if (IsFocused())
 		{
@@ -237,7 +240,7 @@ public:
 			if (GetKey(olc::Key::DOWN).bHeld)
 			{
 				fPlayerVelY = 6.0f;
-				bSquat = true;
+				bSquat = true; //Change to pPlayer->bSquat = true;
 			}
 
 			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
@@ -281,34 +284,11 @@ public:
 				{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
 					fPlayerVelX = 0.0f;
 				}
-				animPlayer.ChangeState("idle");
-
-				if (fabs(fPlayerVelX) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably shouldn't have this here but I think it's funny
-					animPlayer.ChangeState("run");
-			}
-			else if (fFaceDir == +1.0f && fPlayerVelX < 0 || fFaceDir == -1.0f && fPlayerVelX > 0) //Just changed direction but still moving the opposite way -> braking
-			{
-					animPlayer.ChangeState("brake");
-			}
-			else
-			{
-				animPlayer.ChangeState("run");
-			}
-
-			if (bSquat) //This is changed in the Input Handling section
-				animPlayer.ChangeState("squat");
-		}
-		else
-		{
-			if (fPlayerVelY < 0)
-			{
-				animPlayer.ChangeState("jump", true);
-			}
-			else
-			{
-				animPlayer.ChangeState("fall");
+				//else if not the player
+				//something else so it doesn't get stuck
 			}
 		}
+
 
 		////Animation overrides
 		//if (bSquat)
@@ -563,7 +543,21 @@ public:
 		}
 
 		//Play random Jerry Sounds????
-		
+
+		//test
+		olc::Pixel n;
+		olc::Pixel* ptrn = &n;
+		n.n = 0x01234567;
+		Draw(0, 0, n);
+
+		uint32_t hexVal = n.n;
+		uint8_t rVal = n.r;
+		uint8_t gVal = n.g;
+		uint8_t bVal = n.b;
+		uint8_t* rValp = &rVal;
+		uint8_t* gValp = &gVal;
+		uint8_t* bValp = &bVal;
+
 		return true;
 	}
 

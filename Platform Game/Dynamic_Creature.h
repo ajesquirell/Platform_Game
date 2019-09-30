@@ -1,15 +1,26 @@
 #pragma once
 #include "Dynamic_Base.h"]
 #include "Animator.h"
+#include "Assets.h"
 
-class Dynamic_Creature : public cDynamic
+class cDynamic_Creature : public cDynamic
 {
 public:
-	cDynamic_Creature(std::string n, )
+	cDynamic_Creature(std::string n);
+
+protected:
+	cAnimator animations; ///Can private members be accessed by the eventual player and enemy classes by using methods of this class like ChagneState??
 
 public:
-	ChangeState(std::string newState);
-private:
-	cAnimator spriteAnims; ///Can private members be accessed by the eventual player and enemy classes by using methods of this class like ChagneState??
-};
+	int nHealth;
+	int nMaxHealth;
+	bool bPlayerOnGround;
+	float fFaceDir;
+	bool bSquat;
 
+public:
+	//void ChangeState(std::string newState);
+
+	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override; //Screen space offset, since we already have position as data member
+	void Update(float fElapsedTime) override;
+};

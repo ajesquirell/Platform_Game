@@ -19,7 +19,7 @@ public:
 
 	olc::Sprite* GetSprite(std::string name)
 	{
-		return mapSprites[name]; 
+		return mapSprites[name]; //If "name" is specified wrongly or doesn't exist, it will just return a blank sprite
 	}
 
 	void LoadSprites();
