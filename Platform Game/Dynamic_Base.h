@@ -16,6 +16,8 @@ public:
 	bool bFriendly;
 	std::string sName;
 
+	bool bObjectOnGround; //Probably only for Dynamic Creatures and Items
+
 public:
 	virtual void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) = 0; //Screen space offset, since we already have position as data member
 	virtual void Update(float fElapsedTime) {}

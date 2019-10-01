@@ -31,14 +31,8 @@ private:
 	cMap* currentMap = nullptr;
 
 	//Player Properties
-	float fPlayerPosX = 0.0f;
-	float fPlayerPosY = 0.0f;
+	cDynamic_Creature* m_pPlayer = nullptr;
 
-	float fPlayerVelX = 0.0f;
-	float fPlayerVelY = 0.0f;
-
-	bool bPlayerOnGround = false;
-	//cDynamic_Creature* m_pPlayer = nullptr;
 
 	//Camera Properties
 	float fCameraPosX = 0.0f;
@@ -50,15 +44,11 @@ private:
 	olc::Sprite* spriteTEST = nullptr;
 
 	//Sprite selection flags
-	//int nDirModX = 0;
-	//int nDirModY = 0;
-	float fFaceDir = 1.0f;
-	int nPlayerWidth;
-	int nPlayerHeight;
-	bool bSquat;
+	//int nObjectWidth = 22; //Maybe make these global constants in the future in case we want to change resolution, or do other things?
+	//int nObjectHeight = 22;
 
 	//Sprite Animation Class
-	cAnimator animPlayer;
+	//cAnimator animPlayer;
 	cAnimator animMoney;
 
 	//Pickups
@@ -112,27 +102,6 @@ public:
 		Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 
 		//Animated
-			//Jerry
-		animPlayer.mapStates["idle"].push_back(Assets::get().GetSprite("Jerry_Idle"));
-
-		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_1"));
-		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_2"));
-		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_3"));
-		animPlayer.mapStates["run"].push_back(Assets::get().GetSprite("Jerry_Run_4"));
-
-		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_1"));
-		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_2"));
-		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_3"));
-		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_4"));
-		animPlayer.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_5"));
-
-		animPlayer.mapStates["squat"].push_back(Assets::get().GetSprite("Jerry_Squat"));
-
-		animPlayer.mapStates["jump"].push_back(Assets::get().GetSprite("Jerry_Jump_1"));
-		animPlayer.mapStates["jump"].push_back(Assets::get().GetSprite("Jerry_Jump_2"));
-
-		
-		animPlayer.mapStates["fall"].push_back(Assets::get().GetSprite("Jerry_Fall"));
 			
 			//Money
 		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_00"));
@@ -151,7 +120,6 @@ public:
 		animMoney.mapStates["normal"].push_back(Assets::get().GetSprite("Money_13"));
 
 		//Set initial animated states
-		animPlayer.ChangeState("idle");
 		animMoney.ChangeState("normal");
 
 		SetPixelMode(olc::Pixel::MASK); //Allow Transparency
@@ -173,6 +141,10 @@ public:
 		//Map
 		currentMap = new cLevel1;
 
+		//Player init
+		m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
+		/*m_pPlayer->px = 20; //Initial pos is 0,0
+		m_pPlayer->py = 0;*/
 
 		return true;
 	}
@@ -204,8 +176,8 @@ public:
 			return true; //Game loop won't execute
 		}
 
-		nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
-		nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
+		//nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
+		//nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
 		//animPlayer.Update(fElapsedTime);
 		animMoney.Update(fElapsedTime);
 
@@ -233,39 +205,39 @@ public:
 		{
 			if (GetKey(olc::Key::UP).bHeld)
 			{
-				fPlayerVelY = -6.0f;
+				m_pPlayer->vy = -6.0f;
 			}
 
-			bSquat = false; //Reset flag
+			m_pPlayer->bSquat = false; //Reset flag
 			if (GetKey(olc::Key::DOWN).bHeld)
 			{
-				fPlayerVelY = 6.0f;
-				bSquat = true; //Change to pPlayer->bSquat = true;
+				m_pPlayer->vy = 6.0f;
+				m_pPlayer->bSquat = true;
 			}
 
 			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
 			{
 				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					fPlayerVelX += (bPlayerOnGround && fPlayerVelX <= 0 ? -25.0f : bPlayerOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
+					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx <= 0 ? -25.0f : m_pPlayer->bObjectOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
 																																	//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
-				fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
+				m_pPlayer->fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
 				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
 			}
 
 			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
 			{
 				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					fPlayerVelX += (bPlayerOnGround && fPlayerVelX >= 0 ? 25.0f : bPlayerOnGround ? 8.0f : 14.0f) * fElapsedTime; 
+					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx >= 0 ? 25.0f : m_pPlayer->bObjectOnGround ? 8.0f : 14.0f) * fElapsedTime;
 
-				fFaceDir = +1.0f;
+				m_pPlayer->fFaceDir = +1.0f;
 				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
 			}
 
 			if (GetKey(olc::Key::SPACE).bPressed)
 			{
-				if (bPlayerOnGround)
+				if (m_pPlayer->bObjectOnGround)
 				{
-					fPlayerVelY = -12.0f;
+					m_pPlayer->vy = -12.0f;
 					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
 					olc::SOUND::PlaySample(sndBoo);
 				}
@@ -273,17 +245,24 @@ public:
 		}
 
 
-		fPlayerVelY += 20.0f * fElapsedTime; //Gravity
 
-		if (bPlayerOnGround) 
+		//Loop through dynamic objects (creatures?)
+		cDynamic* object = m_pPlayer;
+
+		object->vy += 20.0f * fElapsedTime; //Gravity
+
+		if (object->bObjectOnGround)
 		{
-			fPlayerVelX += -3.0f * fPlayerVelX * fElapsedTime; //Add some drag so it doesn't feel like ice
-			if (fabs(fPlayerVelX) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
+			object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
+			if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
-				if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
-				{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
-					fPlayerVelX = 0.0f;
-				}
+				//if (object == m_pPlayer)
+				//{
+					if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
+					{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
+						object->vx = 0.0f;
+					}
+				//}
 				//else if not the player
 				//something else so it doesn't get stuck
 			}
@@ -295,31 +274,22 @@ public:
 		//	animPlayer.ChangeState("squat");
 
 		//Clamp Velocity to prevent getting out of control
-		if (fPlayerVelX > 10.0f)
-			fPlayerVelX = 10.0f;
+		if (object->vx > 10.0f)
+			object->vx = 10.0f;
 
-		if (fPlayerVelX < -10.0f)
-			fPlayerVelX = -10.0f;
+		if (object->vx < -10.0f)
+			object->vx = -10.0f;
 
-		if (fPlayerVelY > 100.0f)
-			fPlayerVelY = 100.0f;
+		if (object->vy > 100.0f)
+			object->vy = 100.0f;
 		
-		if (fPlayerVelY < -100.0f)
-			fPlayerVelY = -100.0f;
-
-
-		//Change running animation speed based on fPlayerVelX
-		if (animPlayer.sCurrentState == "run")
-			animPlayer.fTimeBetweenFrames = 0.1f * (10.0f / fabs(fPlayerVelX));
-		else if (animPlayer.sCurrentState == "brake")
-			animPlayer.fTimeBetweenFrames = 0.05f;
-		else
-			animPlayer.fTimeBetweenFrames = 0.1f;
+		if (object->vy < -100.0f)
+			object->vy = -100.0f;
 
 
 		//Calculate potential new position
-		float fNewPlayerPosX = fPlayerPosX + fPlayerVelX * fElapsedTime;
-		float fNewPlayerPosY = fPlayerPosY + fPlayerVelY * fElapsedTime;
+		float fNewObjectPosX = object->px + object->vx * fElapsedTime;
+		float fNewObjectPosY = object->py + object->vy * fElapsedTime;
 
 		//Check for pickups! 
 		/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
@@ -336,29 +306,29 @@ public:
 
 
 		//Collision
-		if (fPlayerVelX <= 0) //Player moving left
+		if (object->vx <= 0) //Player moving left
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.0f, fPlayerPosY + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+			if (currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
 			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
-				fNewPlayerPosX = (int)fNewPlayerPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
-				fPlayerVelX = 0;
+				fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
+				object->vx = 0;
 			}
 		}
-		else if (fPlayerVelX > 0) //Player moving Right
+		else if (object->vx > 0) //Player moving Right
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 1.0f, fPlayerPosY + 0.9f)->solid)
+			if (currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 			{
-				fNewPlayerPosX = (int)fNewPlayerPosX;
-				fPlayerVelX = 0;
+				fNewObjectPosX = (int)fNewObjectPosX;
+				object->vx = 0;
 			}
 
 		}
 
-		bPlayerOnGround = false; //Clear flag
-		if (fPlayerVelY <= 0) //Player moving up
+		object->bObjectOnGround = false; //Clear flag
+		if (object->vy <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 0.0f)->solid)
+			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
 				//if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
@@ -381,29 +351,30 @@ public:
 
 				/***********************************************************************************/
 
-				fNewPlayerPosY = (int)fNewPlayerPosY + 1;
-				fPlayerVelY = 0;
+				fNewObjectPosY = (int)fNewObjectPosY + 1;
+				object->vy = 0;
 			}
 		}
 		else //Player moving down
 		{
-			if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)->solid || currentMap->GetTile(fNewPlayerPosX + 0.99999f, fNewPlayerPosY + 1.0f)->solid)
+			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
 			{
-				fNewPlayerPosY = (int)fNewPlayerPosY;
-				fPlayerVelY = 0;
-				bPlayerOnGround = true;
+				fNewObjectPosY = (int)fNewObjectPosY;
+				object->vy = 0;
+				object->bObjectOnGround = true;
 			}
 		}
 
 
 
 
-		fPlayerPosX = fNewPlayerPosX;
-		fPlayerPosY = fNewPlayerPosY;
+		object->px = fNewObjectPosX;
+		object->py = fNewObjectPosY;
 
+		object->Update(fElapsedTime);
 
-		fCameraPosX = fPlayerPosX;
-		fCameraPosY = fPlayerPosY;
+		fCameraPosX = m_pPlayer->px;
+		fCameraPosY = m_pPlayer->py;
 
 		//Draw Level 
 		int nTileWidth = 22;
@@ -499,18 +470,13 @@ public:
 		//FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
 		//DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, (nDirModX ? spriteManJump : spriteMan));
 
-		// Draw Player
 
-		olc::GFX2D::Transform2D t;
-		t.Translate(-nPlayerWidth / 2, -nPlayerHeight / 2); //Align player sprite to 0,0 to do affine transformations
-		t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
-		//t.Rotate(fPlayerPosX);
-		t.Translate((fPlayerPosX - fOffsetX)* nTileWidth + nPlayerWidth / 2, (fPlayerPosY - fOffsetY) * nTileHeight + nPlayerHeight / 2);
+		// Draw Object
 
-		//SetPixelMode(olc::Pixel::ALPHA);
-		animPlayer.DrawSelf(this, t);
-		//SetPixelMode(olc::Pixel::NORMAL);
+		SetPixelMode(olc::Pixel::MASK);
+		object->DrawSelf(this, fOffsetX, fOffsetY);
+		SetPixelMode(olc::Pixel::NORMAL);
 
 		//Draw Score
 		sScoreString = "Flames Cash: " + to_string(nPlayerScore);
@@ -526,8 +492,8 @@ public:
 		if (showDebug)
 		{
 			DrawString(0, 15, "Debug: (D to hide)");
-			DrawString(0, 24, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
-			DrawString(1, 33, "X-Velocity: " + to_string(fPlayerVelX) + "\nY-Velocity: " + to_string(fPlayerVelY));
+			//DrawString(0, 24, "Time Between Animation: " + to_string(animPlayer.fTimeBetweenFrames));
+			DrawString(1, 33, "X-Velocity: " + to_string(m_pPlayer->vx) + "\nY-Velocity: " + to_string(m_pPlayer->vy));
 			DrawString(1, 53, to_string(fElapsedTime));
 		}
 

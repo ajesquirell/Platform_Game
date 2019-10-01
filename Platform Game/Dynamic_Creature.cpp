@@ -4,7 +4,6 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
 	nHealth = 10;
 	nMaxHealth = 10;
-	bPlayerOnGround = false;
 	fFaceDir = +1.0f;
 	bSquat = false;
 
@@ -28,20 +27,27 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 
 
 	animations.mapStates["fall"].push_back(Assets::get().GetSprite("Jerry_Fall"));
+
+	animations.ChangeState("idle");
 }
 
 void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) //Screen space offset, since we already have position as data member
 {
 	olc::GFX2D::Transform2D t;
-	t.Translate(oy, oy);
+	t.Translate(-22 / 2, -22 / 2); //Align player sprite to 0,0 to do affine transformations
+	t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
+
+	//t.Rotate(fPlayerPosX);
+	t.Translate((px - ox) * 22 + 22/2, (py - oy) * 22 + 22/2); //If we want to change resolution later, need to make a global constant instead of 22
+
 	animations.DrawSelf(pge, t);
 }
 
 void cDynamic_Creature::Update(float fElapsedTime)
 {
-	if (bPlayerOnGround)
+	if (bObjectOnGround)
 	{
-		if (fabs(vx) == 0.0f) //Clamp vel to 0 if near 0 to allow player to stop
+		if (fabs(vx) == 0.0f)
 		{
 			animations.ChangeState("idle");
 
@@ -72,6 +78,17 @@ void cDynamic_Creature::Update(float fElapsedTime)
 		}
 	}
 
+	/*if (nHealth <= 0)
+		animations.ChangeState("dead");*/
+
+
+	//Change animation speed based on object's vx -- Could put this in just the player class if we don't want all objects doing this
+	if (animations.sCurrentState == "run")
+		animations.fTimeBetweenFrames = 0.1f * (10.0f / fabs(vx));
+	else if (animations.sCurrentState == "brake")
+		animations.fTimeBetweenFrames = 0.05f;
+	else
+		animations.fTimeBetweenFrames = 0.1f;
 
 	animations.Update(fElapsedTime); //Update animation frame
 }

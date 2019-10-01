@@ -12,6 +12,7 @@ cDynamic::cDynamic(string n)
 	bSolidVsMap = true;
 	bSolidVsDynamic = true;
 	bFriendly = true;
+	bObjectOnGround = false;
 }
 
 cDynamic::~cDynamic()

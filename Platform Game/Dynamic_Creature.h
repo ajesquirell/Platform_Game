@@ -14,7 +14,6 @@ protected:
 public:
 	int nHealth;
 	int nMaxHealth;
-	bool bPlayerOnGround;
 	float fFaceDir;
 	bool bSquat;
 

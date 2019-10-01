@@ -1,6 +1,7 @@
 #pragma once
 
 #include "olcPixelGameEngine.h"
+#include <iostream>
 #include <map>
 
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
@@ -19,6 +20,9 @@ public:
 
 	olc::Sprite* GetSprite(std::string name)
 	{
+		if (mapSprites[name] == nullptr)
+			std::cerr << "\nError: Could not retrieve sprite with the name \"" << name << "\". Please ensure it exists on disk and is loaded from Assets class.\n";
+
 		return mapSprites[name]; //If "name" is specified wrongly or doesn't exist, it will just return a blank sprite
 	}
 
