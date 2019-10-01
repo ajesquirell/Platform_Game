@@ -178,26 +178,8 @@ public:
 
 		//nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
 		//nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
-		//animPlayer.Update(fElapsedTime);
+
 		animMoney.Update(fElapsedTime);
-
-		// Utility Lambdas
-		/*auto GetTile = [&](int x, int y)
-		{
-			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
-				return sCurrentLevel[y * nLevelWidth + x];
-			else
-				return L' ';
-		};
-
-		auto SetTile = [&](int x, int y, wchar_t c)
-		{
-			if (x >= 0 && x < nLevelWidth && y >= 0 && y < nLevelHeight)
-				sCurrentLevel[y * nLevelWidth + x] = c;
-		};
-*/
-		//fPlayerVelX = 0.0f;
-		//fPlayerVelY = 0.0f;
 
 
 		//Handle Input
@@ -240,6 +222,13 @@ public:
 					m_pPlayer->vy = -12.0f;
 					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
 					olc::SOUND::PlaySample(sndBoo);
+				}
+			}
+			if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed
+			{
+				if (m_pPlayer->vy < 0) //Is currently jumping
+				{
+					m_pPlayer->vy += 35.0f * fElapsedTime;
 				}
 			}
 		}
@@ -330,24 +319,24 @@ public:
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
 			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
 			{
-				/***Check for breakable blocks (putting here allows for collision AND breaking)***/
-				//if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B' && currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B') //Needs to be first in if statement(checked first)
-				//{
-				//	SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'b');
-				//	//SetTile(fNewPlayerPosX + 0.5f, fNewPlayerPosY + 0.0f, L'.'); //Only break one block at a time
-				//}
+				/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
+				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+				{
+					currentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
+						//currentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+				}
+			
+				else if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+				{
+					currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						//currentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+				}
 
-				//else if (currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f) == L'B')
-				//{
-				//	SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'b');
-				//	//SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
-				//}
-
-				//else if (currentMap->GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f) == L'B')
-				//{
-				//	SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'b');
-				//	//SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
-				//}
+				else if (currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+				{
+					currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						//currentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+				}
 
 				/***********************************************************************************/
 
@@ -371,7 +360,20 @@ public:
 		object->px = fNewObjectPosX;
 		object->py = fNewObjectPosY;
 
+
+		//Update dynamic objects
 		object->Update(fElapsedTime);
+
+		//Update tile animations
+		for (int x = 0; x < currentMap->nWidth; x++)
+		{
+			for (int y = 0; y < currentMap->nHeight; y++)
+			{
+				currentMap->GetTile(x, y)->Update(fElapsedTime);
+			}
+		}
+
+
 
 		fCameraPosX = m_pPlayer->px;
 		fCameraPosY = m_pPlayer->py;
@@ -466,22 +468,18 @@ public:
 			}
 		}
 
-		//Draw Player
-		//FillRect((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, nTileWidth, nTileHeight, olc::GREEN);
-		//DrawSprite((fPlayerPosX - fOffsetX) * nTileWidth, (fPlayerPosY - fOffsetY) * nTileHeight, (nDirModX ? spriteManJump : spriteMan));
-
-
-
 		// Draw Object
 
-		SetPixelMode(olc::Pixel::MASK);
+		//SetPixelMode(olc::Pixel::MASK);
 		object->DrawSelf(this, fOffsetX, fOffsetY);
-		SetPixelMode(olc::Pixel::NORMAL);
+		//SetPixelMode(olc::Pixel::NORMAL);
 
 		//Draw Score
 		sScoreString = "Flames Cash: " + to_string(nPlayerScore);
 		DrawString(0, 0, sScoreString, olc::RED);
 
+		/*
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Debug+Testing
 		if (GetKey(olc::Key::D).bPressed)
 			if (showDebug)
@@ -496,6 +494,8 @@ public:
 			DrawString(1, 33, "X-Velocity: " + to_string(m_pPlayer->vx) + "\nY-Velocity: " + to_string(m_pPlayer->vy));
 			DrawString(1, 53, to_string(fElapsedTime));
 		}
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		*/
 
 		DrawString(140, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
 		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
@@ -509,20 +509,6 @@ public:
 		}
 
 		//Play random Jerry Sounds????
-
-		//test
-		olc::Pixel n;
-		olc::Pixel* ptrn = &n;
-		n.n = 0x01234567;
-		Draw(0, 0, n);
-
-		uint32_t hexVal = n.n;
-		uint8_t rVal = n.r;
-		uint8_t gVal = n.g;
-		uint8_t bVal = n.b;
-		uint8_t* rValp = &rVal;
-		uint8_t* gValp = &gVal;
-		uint8_t* bValp = &bVal;
 
 		return true;
 	}

@@ -17,8 +17,26 @@ void Assets::LoadSprites() //Single one time load of all sprite resources
 		mapSprites[name] = new olc::Sprite(filename);
 	};
 
+	//Floor
 	load("Floor", "../Sprites/Floor.png");
-	load("Brick", "../Sprites/Brick.png");
+
+	//Brick
+	load("Brick", "../Sprites/Brick/Brick.png");
+	load("Brick_Break_01", "../Sprites/Brick/Brick_Break_00.png");
+	load("Brick_Break_02", "../Sprites/Brick/Brick_Break_01.png");
+	load("Brick_Break_03", "../Sprites/Brick/Brick_Break_02.png");
+	load("Brick_Break_04", "../Sprites/Brick/Brick_Break_03.png");
+	load("Brick_Break_05", "../Sprites/Brick/Brick_Break_04.png");
+	load("Brick_Break_06", "../Sprites/Brick/Brick_Break_05.png");
+	load("Brick_Break_07", "../Sprites/Brick/Brick_Break_06.png");
+	load("Brick_Break_08", "../Sprites/Brick/Brick_Break_07.png");
+	load("Brick_Break_09", "../Sprites/Brick/Brick_Break_08.png");
+	load("Brick_Break_10", "../Sprites/Brick/Brick_Break_09.png");
+	load("Brick_Break_11", "../Sprites/Brick/Brick_Break_10.png");
+	load("Brick_Break_12", "../Sprites/Brick/Brick_Break_11.png");
+	load("Brick_Break_13", "../Sprites/Brick/Brick_Break_12.png");
+	load("Brick_Break_14", "../Sprites/Brick/Brick_Break_13.png");
+
 
 	//Jerry
 	load("Jerry_Idle", "../Sprites/Jerry_Idle.png");

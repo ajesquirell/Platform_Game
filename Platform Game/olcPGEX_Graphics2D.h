@@ -178,7 +178,7 @@ namespace olc
 				float ox, oy;
 				transform.Backward(i, j, ox, oy);
 				Pixel pp = sprite->GetPixel((int32_t)(ox + 0.5f), (int32_t)(oy + 0.5f));
-				pp.n = pp.n ^ 0x00FFFFFF;
+				//pp.n = pp.n ^ 0x00FFFFFF; //Invert Colors
 
 				pge->Draw((int32_t)i, (int32_t)j, pp);
 			}

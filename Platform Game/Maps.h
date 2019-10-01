@@ -23,6 +23,7 @@ public:
 
 	bool Create(std::string fileName, std::string name);
 
+
 private:
 	cTile** tiles = nullptr;	//Going to be an array of pointers to tiles
 

@@ -14,6 +14,7 @@ public:
 	float fTimeBetweenFrames = 0.1f; //Default
 	float fTimeCounter = 0.0f;
 	bool bAnimateOnceState = false;
+		bool bCompletedAnimation = false;
 
 	cAnimator()
 	{
@@ -64,11 +65,13 @@ public:
 			if (nCurrentFrame >= mapStates[sCurrentState].size())
 			{
 				if (bAnimateOnceState)
+				{
 					nCurrentFrame = nCurrentFrame - 1;
+					bCompletedAnimation = true;
+				}
 				else
 					nCurrentFrame = 0;
 			}
-
 		}
 	}
 

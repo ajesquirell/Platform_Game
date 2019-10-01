@@ -22,7 +22,7 @@
     <ClCompile Include="Assets.cpp" />
     <ClCompile Include="Dynamic_Base.cpp" />
     <ClCompile Include="Dynamic_Creature.cpp" />
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Jerry_Engine.cpp" />
     <ClCompile Include="Maps.cpp" />
     <ClCompile Include="Tiles.cpp" />
   </ItemGroup>
