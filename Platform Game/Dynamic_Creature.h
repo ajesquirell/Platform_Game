@@ -14,7 +14,7 @@ protected:
 public:
 	int nHealth;
 	int nMaxHealth;
-	float fFaceDir;
+	float fFaceDir; //For player handled in input, but for other creatures should be handled in their behavior based on their calculated destination position relative to their current pos
 	bool bSquat;
 
 public:

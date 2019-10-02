@@ -6,10 +6,10 @@
 #include "olcPGEX_Graphics2D.h"
 
 #include "Assets.h"
-#include "Animator.h"
+#include "Animator.h" //Don't think I need this when finally get rid of all left over stuff
 #include "Maps.h"
-
 #include "Dynamic_Creature.h"
+#include "Commands.h"
 
 #include <iostream>
 #include <string>
@@ -32,6 +32,10 @@ private:
 
 	//Player Properties
 	cDynamic_Creature* m_pPlayer = nullptr;
+
+	vector<cDynamic*> vecDynamics;
+
+	cScriptProcessor m_script;
 
 
 	//Camera Properties
@@ -143,8 +147,21 @@ public:
 
 		//Player init
 		m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
-		/*m_pPlayer->px = 20; //Initial pos is 0,0
-		m_pPlayer->py = 0;*/
+		m_pPlayer->px = 0; //Initial pos is 0,0
+		m_pPlayer->py = 0;
+
+		//Hack in a few other objects for now
+		cDynamic_Creature* ob1 = new cDynamic_Creature("Enemy1"); //For now sprites/ anims are hard coded to be Jerry
+		ob1->px = 5; //Initial pos is 0,0
+		ob1->py = 0;
+
+		cDynamic* ob2 = new cDynamic_Creature("Enemy2"); //For now sprites/ anims are hard coded to be Jerry
+		ob2->px = 10; //Initial pos is 0,0
+		ob2->py = 0;
+
+		vecDynamics.push_back(m_pPlayer);
+		vecDynamics.push_back(ob1);
+		vecDynamics.push_back(ob2);
 
 		return true;
 	}
@@ -176,204 +193,219 @@ public:
 			return true; //Game loop won't execute
 		}
 
-		//nPlayerWidth = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->width;
-		//nPlayerHeight = animPlayer.mapStates[animPlayer.sCurrentState][animPlayer.nCurrentFrame]->height;
+		//Update script
+		m_script.ProcessCommands(fElapsedTime);
 
-		animMoney.Update(fElapsedTime);
-
-
-		//Handle Input
-		if (IsFocused())
+		if (m_script.bPlayerControlEnabled)
 		{
-			if (GetKey(olc::Key::UP).bHeld)
-			{
-				m_pPlayer->vy = -6.0f;
-			}
 
-			m_pPlayer->bSquat = false; //Reset flag
-			if (GetKey(olc::Key::DOWN).bHeld)
+			//Handle Input
+			if (IsFocused())
 			{
-				m_pPlayer->vy = 6.0f;
-				m_pPlayer->bSquat = true;
-			}
-
-			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
-			{
-				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx <= 0 ? -25.0f : m_pPlayer->bObjectOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
-																																	//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
-				m_pPlayer->fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
-				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
-			}
-
-			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
-			{
-				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx >= 0 ? 25.0f : m_pPlayer->bObjectOnGround ? 8.0f : 14.0f) * fElapsedTime;
-
-				m_pPlayer->fFaceDir = +1.0f;
-				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
-			}
-
-			if (GetKey(olc::Key::SPACE).bPressed)
-			{
-				if (m_pPlayer->bObjectOnGround)
+				if (GetKey(olc::Key::UP).bHeld)
 				{
-					m_pPlayer->vy = -12.0f;
-					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
-					olc::SOUND::PlaySample(sndBoo);
+					m_pPlayer->vy = -6.0f;
+				}
+
+				m_pPlayer->bSquat = false; //Reset flag
+				if (GetKey(olc::Key::DOWN).bHeld)
+				{
+					m_pPlayer->vy = 6.0f;
+					m_pPlayer->bSquat = true;
+				}
+
+				if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
+				{
+					if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+						m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx <= 0 ? -25.0f : m_pPlayer->bObjectOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
+																																		//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
+					m_pPlayer->fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
+					//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
+				}
+
+				if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
+				{
+					if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+						m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx >= 0 ? 25.0f : m_pPlayer->bObjectOnGround ? 8.0f : 14.0f) * fElapsedTime;
+
+					m_pPlayer->fFaceDir = +1.0f;
+					//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
+				}
+
+				if (GetKey(olc::Key::SPACE).bPressed)
+				{
+					if (m_pPlayer->bObjectOnGround)
+					{
+						m_pPlayer->vy = -12.0f;
+						//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
+						olc::SOUND::PlaySample(sndBoo);
+					}
+				}
+				if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed
+				{
+					if (m_pPlayer->vy < 0) //Is currently jumping
+					{
+						m_pPlayer->vy += 35.0f * fElapsedTime;
+					}
+				}
+
+				if (GetKey(olc::Key::Z).bReleased)
+				{
+					m_script.AddCommand(new cCommand_MoveTo(m_pPlayer, 0, 9, 2.0f));
+					m_script.AddCommand(new cCommand_MoveTo(vecDynamics[1], 4, 4, 2.0f));
+					m_script.AddCommand(new cCommand_MoveTo(vecDynamics[2], 4, 9, 2.0f));
+
+
 				}
 			}
-			if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed
-			{
-				if (m_pPlayer->vy < 0) //Is currently jumping
-				{
-					m_pPlayer->vy += 35.0f * fElapsedTime;
-				}
-			}
+		}
+		else // Script processor has control - simply adjust facing direction here. Other objects will do this in behavior
+		{
+			for (auto& object : vecDynamics)
+				((cDynamic_Creature*)object)->fFaceDir = (((cDynamic_Creature*)object)->vx < 0 ? -1.0f : ((cDynamic_Creature*)object)->vx > 0 ? 1.0f : ((cDynamic_Creature*)object)->fFaceDir);
 		}
 
 
 
 		//Loop through dynamic objects (creatures?)
-		cDynamic* object = m_pPlayer;
-
-		object->vy += 20.0f * fElapsedTime; //Gravity
-
-		if (object->bObjectOnGround)
+		for (auto& object : vecDynamics)
 		{
-			object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
-			if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
+			object->vy += 20.0f * fElapsedTime; //Gravity
+
+			if (object->bObjectOnGround)
 			{
-				//if (object == m_pPlayer)
-				//{
+				object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
+				if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
+				{
+					//if (object == m_pPlayer)
+					//{
 					if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
 					{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
 						object->vx = 0.0f;
 					}
-				//}
-				//else if not the player
-				//something else so it doesn't get stuck
+					//}
+					//else if not the player
+					//something else so it doesn't get stuck
+				}
 			}
-		}
 
 
-		////Animation overrides
-		//if (bSquat)
-		//	animPlayer.ChangeState("squat");
+			////Animation overrides
+			//if (bSquat)
+			//	animPlayer.ChangeState("squat");
 
-		//Clamp Velocity to prevent getting out of control
-		if (object->vx > 10.0f)
-			object->vx = 10.0f;
+			//Clamp Velocity to prevent getting out of control
+			if (object->vx > 10.0f)
+				object->vx = 10.0f;
 
-		if (object->vx < -10.0f)
-			object->vx = -10.0f;
+			if (object->vx < -10.0f)
+				object->vx = -10.0f;
 
-		if (object->vy > 100.0f)
-			object->vy = 100.0f;
-		
-		if (object->vy < -100.0f)
-			object->vy = -100.0f;
+			if (object->vy > 100.0f)
+				object->vy = 100.0f;
 
-
-		//Calculate potential new position
-		float fNewObjectPosX = object->px + object->vx * fElapsedTime;
-		float fNewObjectPosY = object->py + object->vy * fElapsedTime;
-
-		//Check for pickups! 
-		/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
-			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
-			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f)))
-			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f)))
-			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');*/
+			if (object->vy < -100.0f)
+				object->vy = -100.0f;
 
 
-		//Collision
-		if (object->vx <= 0) //Player moving left
-		{
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
-			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
-				fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
-				object->vx = 0;
-			}
-		}
-		else if (object->vx > 0) //Player moving Right
-		{
-			if (currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
+			//Calculate potential new position
+			float fNewObjectPosX = object->px + object->vx * fElapsedTime;
+			float fNewObjectPosY = object->py + object->vy * fElapsedTime;
+
+			//Check for pickups! 
+			/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
+				SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
+
+			if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
+				SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f, L'.');
+
+			if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f)))
+				SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
+
+			if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f)))
+				SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');*/
+
+
+				//Collision
+			if (object->vx <= 0) //Player moving left
 			{
-				fNewObjectPosX = (int)fNewObjectPosX;
-				object->vx = 0;
+				if (currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+				{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
+					fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
+					object->vx = 0;
+				}
 			}
-
-		}
-
-		object->bObjectOnGround = false; //Clear flag
-		if (object->vy <= 0) //Player moving up
-		{
-			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+			else if (object->vx > 0) //Player moving Right
 			{
-				/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
-				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+				if (currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 				{
-					currentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
+					fNewObjectPosX = (int)fNewObjectPosX;
+					object->vx = 0;
+				}
+
+			}
+
+			object->bObjectOnGround = false; //Clear flag
+			if (object->vy <= 0) //Player moving up
+			{
+				//Already resolved X-direction collisions, so we can use the new X position and new Y position
+				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+				{
+					/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
+					if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+					{
+						currentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
 						//currentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
-				}
-			
-				else if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
-				{
-					currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+					}
+
+					else if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+					{
+						currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
 						//currentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
-				}
+					}
 
-				else if (currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
-				{
-					currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+					else if (currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+					{
+						currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
 						//currentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+					}
+
+					/***********************************************************************************/
+
+					fNewObjectPosY = (int)fNewObjectPosY + 1;
+					object->vy = 0;
 				}
-
-				/***********************************************************************************/
-
-				fNewObjectPosY = (int)fNewObjectPosY + 1;
-				object->vy = 0;
 			}
-		}
-		else //Player moving down
-		{
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+			else //Player moving down
 			{
-				fNewObjectPosY = (int)fNewObjectPosY;
-				object->vy = 0;
-				object->bObjectOnGround = true;
+				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+				{
+					fNewObjectPosY = (int)fNewObjectPosY;
+					object->vy = 0;
+					object->bObjectOnGround = true;
+				}
 			}
-		}
 
 
 
 
-		object->px = fNewObjectPosX;
-		object->py = fNewObjectPosY;
+			object->px = fNewObjectPosX;
+			object->py = fNewObjectPosY;
 
 
-		//Update dynamic objects
-		object->Update(fElapsedTime);
+			//Update dynamic objects
+			object->Update(fElapsedTime);
 
-		//Update tile animations
-		for (int x = 0; x < currentMap->nWidth; x++)
-		{
-			for (int y = 0; y < currentMap->nHeight; y++)
+			//Update tile animations
+			for (int x = 0; x < currentMap->nWidth; x++)
 			{
-				currentMap->GetTile(x, y)->Update(fElapsedTime);
+				for (int y = 0; y < currentMap->nHeight; y++)
+				{
+					currentMap->GetTile(x, y)->Update(fElapsedTime);
+				}
 			}
+
 		}
-
-
 
 		fCameraPosX = m_pPlayer->px;
 		fCameraPosY = m_pPlayer->py;
@@ -469,10 +501,11 @@ public:
 		}
 
 		// Draw Object
+		for (auto& object : vecDynamics)
+			object->DrawSelf(this, fOffsetX, fOffsetY);
 
-		//SetPixelMode(olc::Pixel::MASK);
-		object->DrawSelf(this, fOffsetX, fOffsetY);
-		//SetPixelMode(olc::Pixel::NORMAL);
+
+		m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
 
 		//Draw Score
 		sScoreString = "Flames Cash: " + to_string(nPlayerScore);

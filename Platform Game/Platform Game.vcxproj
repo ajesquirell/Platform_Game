@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets.cpp" />
+    <ClCompile Include="Commands.cpp" />
     <ClCompile Include="Dynamic_Base.cpp" />
     <ClCompile Include="Dynamic_Creature.cpp" />
     <ClCompile Include="Jerry_Engine.cpp" />
@@ -29,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Assets.h" />
+    <ClInclude Include="Commands.h" />
     <ClInclude Include="Dynamic_Base.h" />
     <ClInclude Include="Dynamic_Creature.h" />
     <ClInclude Include="Maps.h" />
