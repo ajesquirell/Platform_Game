@@ -1,6 +1,13 @@
 #include "Commands.h"
+#include "Jerry_Engine.cpp"
 
 using namespace std;
+
+//This still just shuts compiler up, but it won't for long because
+//it still needs a body, so we include the game engine file above.
+//Otherwise, compiler says "incomplete class type not allowed"
+Platformer* cCommand::g_engine = nullptr;
+
 
 cScriptProcessor::cScriptProcessor()
 {
@@ -39,9 +46,20 @@ void cScriptProcessor::ProcessCommands(float fElapsedTime)
 	}
 }
 
+// Sets currently active command as complete, from external source
+void cScriptProcessor::CompleteCommand()
+{
+	if (!listCommands.empty())
+	{
+		listCommands.front()->bCompleted = true;
+	}
+}
+
 //======================================================
 //=====================   Commands   ===================
 //======================================================
+
+/*--------------------   Move To   -------------------*/
 
 cCommand_MoveTo::cCommand_MoveTo(cDynamic* object, float x, float y, float duration)
 {
@@ -80,4 +98,21 @@ void cCommand_MoveTo::Update(float fElapsedTime) //Could eventually do path plan
 		m_pObject->vy = 0.0f;
 		bCompleted = true;
 	}
+}
+
+/*--------------------   Show Dialog   -------------------*/
+cCommand_ShowDialog::cCommand_ShowDialog(vector<string> lines)
+{
+	vecLines = lines;
+}
+
+void cCommand_ShowDialog::Start() 
+{
+	//Can probably do all this without the static g_engine pointer,
+	//since we don't use the DrawBigText function,
+	//and instead use the pge function DrawString, by passing in pge.
+	//This is the only spaghetti code, but we could probably not to this at all
+
+	// Need communication with game engine, since it is responsible for drawing to screen
+	g_engine->ShowDialog(vecLines);
 }

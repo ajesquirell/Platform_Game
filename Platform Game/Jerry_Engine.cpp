@@ -102,6 +102,11 @@ public:
 
 	bool OnUserCreate() override
 	{
+		//Only instance of spaghetti code
+		//But allows us to easily access all the
+		//public utilities from this file - our game engine
+		cCommand::g_engine = this;
+
 		//Load Sprites
 		Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 
@@ -254,14 +259,26 @@ public:
 					m_script.AddCommand(new cCommand_MoveTo(m_pPlayer, 0, 9, 2.0f));
 					m_script.AddCommand(new cCommand_MoveTo(vecDynamics[1], 4, 4, 2.0f));
 					m_script.AddCommand(new cCommand_MoveTo(vecDynamics[2], 4, 9, 2.0f));
-
+					m_script.AddCommand(new cCommand_ShowDialog({ "Oh silly Jerry" }));
+					m_script.AddCommand(new cCommand_ShowDialog({ "I think OOP", "is really useful" }));
+					m_script.AddCommand(new cCommand_MoveTo(m_pPlayer, 7, 9, 2.5f));
 
 				}
 			}
 		}
-		else // Script processor has control - simply adjust facing direction here. Other objects will do this in behavior
+		else // Script processor has control 
 		{
-				m_pPlayer->fFaceDir = (m_pPlayer->vx < 0 ? -1.0f : m_pPlayer->vx > 0 ? 1.0f : m_pPlayer->fFaceDir);
+			// Simply adjust facing direction here.Other objects will do this in behavior
+			m_pPlayer->fFaceDir = (m_pPlayer->vx < 0 ? -1.0f : m_pPlayer->vx > 0 ? 1.0f : m_pPlayer->fFaceDir);
+
+			if (bShowDialog)
+			{
+				if (GetKey(olc::Key::SPACE).bReleased)
+				{
+					bShowDialog = false;
+					m_script.CompleteCommand();
+				}
+			}
 		}
 
 
@@ -503,8 +520,11 @@ public:
 		for (auto& object : vecDynamics)
 			object->DrawSelf(this, fOffsetX, fOffsetY);
 
-
 		m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
+
+		// Draw any dialog being displayed
+		if (bShowDialog)
+			DisplayDialog(vecDialogToShow, 20, 20);
 
 		//Draw Score
 		sScoreString = "Flames Cash: " + to_string(nPlayerScore);
@@ -543,6 +563,39 @@ public:
 		//Play random Jerry Sounds????
 
 		return true;
+	}
+
+
+	vector<string> vecDialogToShow;
+	bool bShowDialog = false;
+	float fDialogX = 0.0f;
+	float fDialogY = 0.0f;
+
+	void ShowDialog(vector<string> vecLines)
+	{
+		vecDialogToShow = vecLines;
+		bShowDialog = true;
+	}
+
+	void DisplayDialog(vector<string> vecLines, int x, int y)
+	{
+		// Display dialog in a nice looking way
+		int nMaxLineLength = 0;
+		int nLines = vecLines.size();
+
+		for (auto l : vecLines) if (l.size() > nMaxLineLength) nMaxLineLength = l.size();
+
+		// Draw Box (Default Font size is 8x8, so that constant is used here)
+		FillRect(x - 1, y - 1, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1, olc::DARK_BLUE);
+		DrawLine(x - 2, y - 2, x - 2, y + nLines * 8 + 1);
+		DrawLine(x + nMaxLineLength * 8 + 1, y - 2, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1);
+		DrawLine(x - 2, y - 2, x + nMaxLineLength * 8 + 1, y - 2);
+		DrawLine(x - 2, y + nLines * 8 + 1, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1);
+
+		for (int l = 0; l < vecLines.size(); l++)
+		{
+			DrawString(x, y + l * 8, vecLines[l], olc::WHITE);
+		}
 	}
 
 };

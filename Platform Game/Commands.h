@@ -4,6 +4,13 @@
 #include "Dynamic_Creature.h"
 #include <list>
 
+//Forwardly declare the game engine itself
+//Tells compiler that this symbol exists before it reaches
+//the line declaring static g_engine.
+//But it doesn't really exist because of this, so we need to give it
+//some kind of implementation in the cpp file
+class Platformer;
+
 class cCommand
 {
 public:
@@ -15,6 +22,8 @@ public:
 
 	virtual void Start() {}
 	virtual void Update(float fElapsedTime) {}
+
+	static Platformer* g_engine;
 };
 
 class cScriptProcessor
@@ -25,6 +34,7 @@ public:
 public:
 	void AddCommand(cCommand* cmd);
 	void ProcessCommands(float fElapsedTime);
+	void CompleteCommand();
 
 public:
 	bool bPlayerControlEnabled;
@@ -52,5 +62,14 @@ private:
 	float m_fTargetPosY;
 	float m_fDuration;
 	float m_fTimeSoFar;
+};
 
+class cCommand_ShowDialog : public cCommand
+{
+public:
+	cCommand_ShowDialog(std::vector<std::string> lines);
+	void Start() override;
+
+private:
+	std::vector<std::string> vecLines;
 };
