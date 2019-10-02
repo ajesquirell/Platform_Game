@@ -261,8 +261,7 @@ public:
 		}
 		else // Script processor has control - simply adjust facing direction here. Other objects will do this in behavior
 		{
-			for (auto& object : vecDynamics)
-				((cDynamic_Creature*)object)->fFaceDir = (((cDynamic_Creature*)object)->vx < 0 ? -1.0f : ((cDynamic_Creature*)object)->vx > 0 ? 1.0f : ((cDynamic_Creature*)object)->fFaceDir);
+				m_pPlayer->fFaceDir = (m_pPlayer->vx < 0 ? -1.0f : m_pPlayer->vx > 0 ? 1.0f : m_pPlayer->fFaceDir);
 		}
 
 

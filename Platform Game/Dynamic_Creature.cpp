@@ -78,6 +78,11 @@ void cDynamic_Creature::Update(float fElapsedTime)
 		}
 	}
 
+	// Update facing direction (Except for player - this is handled explicitly in the game engine using user input)
+	if (sName != "Jerry")
+		fFaceDir = (vx < 0 ? -1.0f : vx > 0 ? 1.0f : fFaceDir);
+
+
 	/*if (nHealth <= 0)
 		animations.ChangeState("dead");*/
 
