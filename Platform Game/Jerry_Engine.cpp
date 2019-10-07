@@ -208,15 +208,12 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 			object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
 			if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
 			{
-				//if (object == m_pPlayer)
-				//{
-				if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration
-				{																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
-					object->vx = 0.0f;
+				if (object == m_pPlayer) {
+					if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
+						object->vx = 0.0f;
 				}
-				//}
-				//else if not the player
-				//something else so it doesn't get stuck
+				//else object not player, and method to stop
+				//should be defined in behavior
 			}
 		}
 
@@ -331,6 +328,32 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 				// If objects are solid then they must not overlap
 				if (dyn->bSolidVsDynamic && object->bSolidVsDynamic)
 				{
+					if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+						&& object->py < (dyn->py + 1.0f) && (object->py + 1.0f) > dyn->py)
+					{
+						// First check horizontally - Left first
+						if (object->vx <= 0)
+							fDynamicObjectPosX = dyn->px + 1.0f;
+						else
+							fDynamicObjectPosX = dyn->px - 1.0f;
+
+						object->vx = 0;
+					}
+
+					if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+						&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
+					{
+						//Then check vertically - Up first
+						if (object->vy <= 0)
+							fDynamicObjectPosY = dyn->py + 1.0f;
+						else
+						{
+							fDynamicObjectPosY = dyn->py - 1.0f;
+							object->bObjectOnGround = true;
+						}
+
+						object->vy = 0;
+					}
 
 				}
 				else
@@ -352,8 +375,8 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 
 
-		object->px = fNewObjectPosX;
-		object->py = fNewObjectPosY;
+		object->px = fDynamicObjectPosX;
+		object->py = fDynamicObjectPosY;
 
 
 		//Update dynamic objects
