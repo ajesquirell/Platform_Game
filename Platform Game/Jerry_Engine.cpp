@@ -34,7 +34,10 @@ bool Platformer::OnUserCreate()
 	//But allows us to easily access all the
 	//public utilities from this file - our game engine
 	cCommand::g_engine = this;
+	cQuest::g_engine = this;
+
 	cMap::g_script = &m_script;
+	cQuest::g_script = &m_script;
 
 	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
@@ -75,6 +78,9 @@ bool Platformer::OnUserCreate()
 	sndGetMoney = olc::SOUND::LoadAudioSample("../Sounds/GetMoney.wav");
 
 	olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
+
+	//Add First Quest
+	listQuests.push_front(new cQuest_TestQuest());
 
 	//Player init
 	m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
@@ -197,6 +203,7 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 				}
 
 				// Check if test point has hit a dynamic object
+				bool bInteraction;
 				for (auto dyns : vecDynamics)
 				{
 					if (fTestX > dyns->px && fTestX < (dyns->px + 1.0f)
@@ -204,6 +211,18 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 					{
 						if (dyns->bFriendly)
 						{
+							// Iterate through stack until something responds
+							// --Base quest should capture interactions not specified by other quests
+							
+							// Check if it's quest related
+							/*for (auto &quest : listQuests)
+								if (quest->OnInteraction(vecDynamics, dyns, cQuest::TALK))
+								{
+									bInteraction = true;
+									break;
+								}*/
+							listQuests.front()->OnInteraction(vecDynamics, dyns, cQuest::TALK);
+							
 							// Then check if it's map related
 							pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK);
 						}
@@ -419,6 +438,11 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 		//Update dynamic objects
 		object->Update(fElapsedTime, m_pPlayer );
 
+		// Remove quests that have been completed
+		auto i = remove_if(listQuests.begin(), listQuests.end(), [](const cQuest* d) {return d->bCompleted; });
+		if (i != listQuests.end())
+			listQuests.erase(i);
+
 		//Update tile animations
 		for (int x = 0; x < pCurrentMap->nWidth; x++)
 		{
@@ -615,5 +639,14 @@ void Platformer::ChangeMap(string sMapName, float x, float y)
 
 		// Create new dynamics from map
 		pCurrentMap->PopulateDynamics(vecDynamics);
+
+		// Create new dynamics from quests
+		for (auto q : listQuests)
+			q->PopulateDynamics(vecDynamics, pCurrentMap->sName);
 	}
+}
+
+void Platformer::AddQuest(cQuest* quest)
+{
+	listQuests.push_front(quest);
 }

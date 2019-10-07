@@ -1,5 +1,6 @@
 #include "Commands.h"
 #include "Jerry_Engine.h"
+#include "Quests.h"
 
 using namespace std;
 
@@ -136,5 +137,17 @@ cCommand_ChangeMap::cCommand_ChangeMap(std::string mapName, float mapPosX, float
 void cCommand_ChangeMap::Start()
 {
 	g_engine->ChangeMap(sMapName, fMapPosX, fMapPosY);
+	bCompleted = true;
+}
+
+/*--------------------   Add Quest   -------------------*/
+cCommand_AddQuest::cCommand_AddQuest(cQuest* quest)
+{
+	this->quest = quest;
+}
+
+void cCommand_AddQuest::Start()
+{
+	g_engine->AddQuest(quest);
 	bCompleted = true;
 }

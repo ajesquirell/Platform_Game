@@ -29,6 +29,7 @@
     <ClCompile Include="Jerry_Engine_Copy.cpp" />
     <ClCompile Include="Maps.cpp" />
     <ClCompile Include="olcPixelGameEngine.cpp" />
+    <ClCompile Include="Quests.cpp" />
     <ClCompile Include="Tiles.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +42,7 @@
     <ClInclude Include="olcPGEX_Graphics2D.h" />
     <ClInclude Include="olcPGEX_Sound.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
+    <ClInclude Include="Quests.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Tiles.h" />
   </ItemGroup>

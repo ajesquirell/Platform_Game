@@ -17,6 +17,7 @@ using namespace std;
 #include "Maps.h"
 #include "Dynamics.h"
 #include "Commands.h"
+#include "Quests.h"
 
 class Platformer : public olc::PixelGameEngine
 {
@@ -33,6 +34,8 @@ private:
 	vector<cDynamic*> vecDynamics;
 
 	cScriptProcessor m_script;
+
+	list<cQuest*> listQuests;
 
 
 	//Camera Properties
@@ -85,6 +88,7 @@ public:
 	void ShowDialog(vector<string> vecLines, olc::Pixel color = olc::DARK_BLUE);
 	void DisplayDialog(vector<string> vecLines, int x, int y);
 	void ChangeMap(string sMapName, float x, float y);
+	void AddQuest(cQuest* quest);
 
 public:
 	vector<string> vecDialogToShow;

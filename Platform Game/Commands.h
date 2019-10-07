@@ -10,6 +10,8 @@
 //some kind of implementation in the cpp file
 class Platformer;
 
+class cQuest;
+
 class cCommand
 {
 public:
@@ -85,4 +87,14 @@ private:
 	std::string sMapName;
 	float fMapPosX;
 	float fMapPosY;
+};
+
+class cCommand_AddQuest : public cCommand
+{
+public:
+	cCommand_AddQuest(cQuest* quest);
+	void Start() override;
+
+private:
+	cQuest* quest;
 };
