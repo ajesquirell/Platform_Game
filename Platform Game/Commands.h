@@ -28,10 +28,15 @@ public:
 
 class cScriptProcessor
 {
-public:
+private:
 	cScriptProcessor();
 
 public:
+	static cScriptProcessor Get()
+	{
+		static cScriptProcessor me;
+		return me;
+	}
 	void AddCommand(cCommand* cmd);
 	void ProcessCommands(float fElapsedTime);
 	void CompleteCommand();

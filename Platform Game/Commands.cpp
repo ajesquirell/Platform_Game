@@ -1,5 +1,5 @@
 #include "Commands.h"
-#include "Jerry_Engine.cpp"
+#include "Jerry_Engine.h"
 
 using namespace std;
 

@@ -24,7 +24,9 @@
     <ClCompile Include="Dynamic_Base.cpp" />
     <ClCompile Include="Dynamic_Creature.cpp" />
     <ClCompile Include="Jerry_Engine.cpp" />
+    <ClCompile Include="Jerry_Engine_Copy.cpp" />
     <ClCompile Include="Maps.cpp" />
+    <ClCompile Include="olcPixelGameEngine.cpp" />
     <ClCompile Include="Tiles.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,6 +35,7 @@
     <ClInclude Include="Commands.h" />
     <ClInclude Include="Dynamic_Base.h" />
     <ClInclude Include="Dynamic_Creature.h" />
+    <ClInclude Include="Jerry_Engine.h" />
     <ClInclude Include="Maps.h" />
     <ClInclude Include="olcPGEX_Graphics2D.h" />
     <ClInclude Include="olcPGEX_Sound.h" />
