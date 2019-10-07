@@ -116,3 +116,17 @@ void cCommand_ShowDialog::Start()
 	// Need communication with game engine, since it is responsible for drawing to screen
 	g_engine->ShowDialog(vecLines);
 }
+
+/*--------------------   Change Map   -------------------*/
+cCommand_ChangeMap::cCommand_ChangeMap(std::string mapName, float mapPosX, float mapPosY)
+{
+	sMapName = mapName;
+	fMapPosX = mapPosX;
+	fMapPosY = mapPosY;
+}
+
+void cCommand_ChangeMap::Start()
+{
+	g_engine->ChangeMap(sMapName, fMapPosX, fMapPosY);
+	bCompleted = true;
+}

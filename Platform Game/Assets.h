@@ -1,8 +1,12 @@
 #pragma once
 
 #include "olcPixelGameEngine.h"
+
 #include <iostream>
 #include <map>
+
+#include "Maps.h"
+//class cMap; //Because we can't include Maps.h - Maps.h includes Tiles.h which includes this header.
 
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
 {
@@ -26,12 +30,22 @@ public:
 		return mapSprites[name]; //If "name" is specified wrongly or doesn't exist, it will just return a blank sprite
 	}
 
+	cMap* GetMap(std::string name)
+	{
+		if (mapMaps[name] == nullptr)
+			std::cerr << "\nError: Could not retrieve map/level with the name \"" << name << "\". Please ensure it exists on disk and is loaded from Assets class.\n";
+
+		return mapMaps[name];
+	}
+
 	void LoadSprites();
+	void LoadMaps();
 
 private:
 	Assets();
 	~Assets();
 
 	std::map<std::string, olc::Sprite*> mapSprites;
+	std::map<std::string, cMap*> mapMaps;
 };
 

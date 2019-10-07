@@ -15,7 +15,7 @@ using namespace std;
 #include "Assets.h"
 #include "Animator.h" //Don't think I need this when finally get rid of all left over stuff
 #include "Maps.h"
-#include "Dynamic_Creature.h"
+#include "Dynamics.h"
 #include "Commands.h"
 
 class Platformer : public olc::PixelGameEngine
@@ -25,7 +25,7 @@ public:
 
 private:
 	//Level Storage
-	cMap* currentMap = nullptr;
+	cMap* pCurrentMap = nullptr;
 
 	//Player Properties
 	cDynamic_Creature* m_pPlayer = nullptr;
@@ -33,6 +33,7 @@ private:
 	vector<cDynamic*> vecDynamics;
 
 	cScriptProcessor m_script;
+
 
 	//Camera Properties
 	float fCameraPosX = 0.0f;
@@ -78,14 +79,12 @@ public:
 	bool HandlePickup(wchar_t c); //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
 
 	bool OnUserCreate() override;
-
 	bool OnUserDestroy();
-
 	bool OnUserUpdate(float fElapsedTime) override;
 
 	void ShowDialog(vector<string> vecLines);
-
 	void DisplayDialog(vector<string> vecLines, int x, int y);
+	void ChangeMap(string sMapName, float x, float y);
 
 public:
 	vector<string> vecDialogToShow;

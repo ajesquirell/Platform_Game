@@ -75,3 +75,14 @@ void Assets::LoadSprites() //Single one time load of all sprite resources
 	 load("Money_12", "../Sprites/Money/Money_12.png");
 	 load("Money_13", "../Sprites/Money/Money_13.png");
 }
+
+void Assets::LoadMaps()
+{
+	auto load = [&](cMap* map)
+	{
+		mapMaps[map->sName] = map;
+	};
+
+	load(new cMap_Level1);
+	load(new cMap_Level2);
+}

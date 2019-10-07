@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Dynamic_Base.h"
-#include "Dynamic_Creature.h"
+#include "Dynamics.h"
 #include <list>
 
 //Forwardly declare the game engine itself
@@ -28,15 +27,10 @@ public:
 
 class cScriptProcessor
 {
-private:
+public:
 	cScriptProcessor();
 
 public:
-	static cScriptProcessor Get()
-	{
-		static cScriptProcessor me;
-		return me;
-	}
 	void AddCommand(cCommand* cmd);
 	void ProcessCommands(float fElapsedTime);
 	void CompleteCommand();
@@ -47,6 +41,7 @@ public:
 private:
 	std::list<cCommand*> listCommands;
 };
+
 
 /*+========================================================+
   +=================   Derived Commands   =================+
@@ -77,4 +72,16 @@ public:
 
 private:
 	std::vector<std::string> vecLines;
+};
+
+class cCommand_ChangeMap : public cCommand
+{
+public:
+	cCommand_ChangeMap(std::string mapName, float mapPosX, float mapPosY);
+	void Start() override;
+
+private:
+	std::string sMapName;
+	float fMapPosX;
+	float fMapPosY;
 };

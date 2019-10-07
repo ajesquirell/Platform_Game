@@ -1,4 +1,5 @@
-#include "Dynamic_Creature.h"
+#include "Dynamics.h"
+#include "Assets.h"
 
 cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
@@ -43,7 +44,7 @@ void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) 
 	animations.DrawSelf(pge, t);
 }
 
-void cDynamic_Creature::Update(float fElapsedTime)
+void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
 {
 	if (bObjectOnGround)
 	{
@@ -96,4 +97,11 @@ void cDynamic_Creature::Update(float fElapsedTime)
 		animations.fTimeBetweenFrames = 0.1f;
 
 	animations.Update(fElapsedTime); //Update animation frame
+
+	Behavior(fElapsedTime, player);
+}
+
+void cDynamic_Creature::Behavior(float fElapsedTime, cDynamic* player)
+{
+	//No default behavior
 }

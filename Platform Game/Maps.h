@@ -1,6 +1,8 @@
 #pragma once
 #include "olcPixelGameEngine.h"
 #include "Tiles.h"
+#include "Dynamics.h"
+#include "Commands.h"
 
 class cMap
 {
@@ -9,19 +11,37 @@ public:
 	~cMap();
 
 public:
+
+	enum NATURE
+	{
+		TALK,
+		WALK
+	};
+
+public:
+	static cScriptProcessor* g_script;
+
 	int nWidth; //Of Map
 	int nHeight;
 
 	olc::Pixel skyColor = olc::CYAN;
 	std::string sName;
 	
-
+public:
 	cTile* GetTile(int x, int y);
 	void SetTile(int x, int y, cTile* t);
-	bool GetSolid(int x, int y);
-	bool GetBreakable(int x, int y);
 
 	bool Create(std::string fileName, std::string name);
+
+	virtual bool PopulateDynamics(std::vector<cDynamic*> &vecDyns)
+	{
+		return false;
+	}
+
+	virtual bool OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature)
+	{
+		return false;
+	}
 
 
 private:
@@ -34,8 +54,20 @@ private:
 };
 
 
-class cLevel1 : public cMap
+class cMap_Level1 : public cMap
 {
 public:
-	cLevel1();
+	cMap_Level1();
+
+	bool PopulateDynamics(std::vector<cDynamic*> &vecDyns) override;
+	bool OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature) override;
+};
+
+class cMap_Level2 : public cMap
+{
+public:
+	cMap_Level2();
+
+	bool PopulateDynamics(std::vector<cDynamic*>& vecDyns) override;
+	bool OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature) override;
 };

@@ -13,7 +13,7 @@
 //#include "Assets.h"
 //#include "Animator.h" //Don't think I need this when finally get rid of all left over stuff
 //#include "Maps.h"
-//#include "Dynamic_Creature.h"
+//#include "Dynamics.h"
 //#include "Commands.h"
 //
 //#define CMD(n) m_script.AddCommand(new cCommand_ ## n)
@@ -28,7 +28,7 @@
 //
 //private:
 //	//Level Storage
-//	cMap* currentMap = nullptr;
+//	cMap* pCurrentMap = nullptr;
 //
 //	//Player Properties
 //	cDynamic_Creature* m_pPlayer = nullptr;
@@ -148,7 +148,7 @@
 //
 //
 //		//Map
-//		currentMap = new cLevel1;
+//		pCurrentMap = new cLevel1;
 //
 //		//Player init
 //		m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
@@ -329,7 +329,7 @@
 //			float fNewObjectPosY = object->py + object->vy * fElapsedTime;
 //
 //			//Check for pickups! 
-//			/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
+//			/*if (HandlePickup(pCurrentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
 //				SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 //
 //			if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
@@ -345,7 +345,7 @@
 //				//Collision
 //			if (object->vx <= 0) //Player moving left
 //			{
-//				if (currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+//				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
 //				{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
 //					fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
 //					object->vx = 0;
@@ -353,7 +353,7 @@
 //			}
 //			else if (object->vx > 0) //Player moving Right
 //			{
-//				if (currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
+//				if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 //				{
 //					fNewObjectPosX = (int)fNewObjectPosX;
 //					object->vx = 0;
@@ -365,25 +365,25 @@
 //			if (object->vy <= 0) //Player moving up
 //			{
 //				//Already resolved X-direction collisions, so we can use the new X position and new Y position
-//				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+//				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
 //				{
 //					/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
-//					if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+//					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
 //					{
-//						currentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
-//						//currentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+//						pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
+//						//pCurrentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
 //					}
 //
-//					else if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+//					else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
 //					{
-//						currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
-//						//currentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+//						pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+//						//pCurrentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 //					}
 //
-//					else if (currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+//					else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
 //					{
-//						currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
-//						//currentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+//						pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+//						//pCurrentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 //					}
 //
 //					/***********************************************************************************/
@@ -394,7 +394,7 @@
 //			}
 //			else //Player moving down
 //			{
-//				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+//				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
 //				{
 //					fNewObjectPosY = (int)fNewObjectPosY;
 //					object->vy = 0;
@@ -413,11 +413,11 @@
 //			object->Update(fElapsedTime);
 //
 //			//Update tile animations
-//			for (int x = 0; x < currentMap->nWidth; x++)
+//			for (int x = 0; x < pCurrentMap->nWidth; x++)
 //			{
-//				for (int y = 0; y < currentMap->nHeight; y++)
+//				for (int y = 0; y < pCurrentMap->nHeight; y++)
 //				{
-//					currentMap->GetTile(x, y)->Update(fElapsedTime);
+//					pCurrentMap->GetTile(x, y)->Update(fElapsedTime);
 //				}
 //			}
 //
@@ -439,8 +439,8 @@
 //		//Clamp camera to game boundaries
 //		if (fOffsetX < 0) fOffsetX = 0;
 //		if (fOffsetY < 0) fOffsetY = 0;
-//		if (fOffsetX > currentMap->nWidth - nVisibleTilesX) fOffsetX = currentMap->nWidth - nVisibleTilesX;
-//		if (fOffsetY > currentMap->nHeight - nVisibleTilesY) fOffsetY = currentMap->nHeight - nVisibleTilesY;
+//		if (fOffsetX > pCurrentMap->nWidth - nVisibleTilesX) fOffsetX = pCurrentMap->nWidth - nVisibleTilesX;
+//		if (fOffsetY > pCurrentMap->nHeight - nVisibleTilesY) fOffsetY = pCurrentMap->nHeight - nVisibleTilesY;
 //
 //		// Get offsets for smooth movement
 //		float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
@@ -451,8 +451,8 @@
 //		{
 //			for (int y = -1; y < nVisibleTilesY + 1; y++)
 //			{
-//				FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, currentMap->skyColor); //Background fill -- "sky"
-//				currentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
+//				FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, pCurrentMap->skyColor); //Background fill -- "sky"
+//				pCurrentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
 //
 //				//switch (sTileID)
 //				//{

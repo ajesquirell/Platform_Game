@@ -1,7 +1,8 @@
 #include "Maps.h"
 #include <fstream>
-
 using namespace std;
+
+cScriptProcessor* cMap::g_script = nullptr;
 
 cMap::cMap()
 {
@@ -32,22 +33,6 @@ void cMap::SetTile(int x, int y, cTile* t)
 {
 	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
 		tiles[y * nWidth + x] = t;
-}
-
-bool cMap::GetSolid(int x, int y)
-{
-	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return tiles[y * nWidth + x]->solid;
-	else
-		return true; //Default will be solid
-}
-
-bool cMap::GetBreakable(int x, int y)
-{
-	if (x >= 0 && x < nWidth && y >= 0 && y < nHeight)
-		return tiles[y * nWidth + x]->solid;
-	else
-		return false; //Default will be non-breakable
 }
 
 
@@ -143,8 +128,76 @@ bool cMap::Create(std::string fileName, std::string name)
 }
 
 
-cLevel1::cLevel1()
+cMap_Level1::cMap_Level1()
 {
-	if (Create("../Levels/level_1.txt", "Level 1"))
-		cout << "File loaded successfully";
+	if (Create("../Levels/Level_1.txt", "Level 1"))
+		cout << "File loaded successfully\n";
+}
+
+bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
+{
+	//Add Teleporters
+	vecDyns.push_back(new cDynamic_Teleport(7.0f, 9.0f, "Level 2", 0.0f, 0.0f));
+
+	for (int i = 0; i < 3; i++)
+	{
+		cDynamic* g = new cDynamic_Creature_FakeJerry();
+		vecDyns.push_back(g);
+		g->px = rand() % 10 + 5.0f;
+		g->py = 0.0f;
+	}
+
+	return true;
+}
+
+bool cMap_Level1::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature)
+{
+	if (target->sName == "Teleport")
+	{
+		// I imagine casting is okay because we are ensuring that only teleport object make it to these lines
+		g_script->AddCommand(new cCommand_ChangeMap(
+			((cDynamic_Teleport*)target)->sMapName,
+			((cDynamic_Teleport*)target)->fMapPosX,
+			((cDynamic_Teleport*)target)->fMapPosY));
+	}
+
+	return false;
+}
+
+
+
+cMap_Level2::cMap_Level2()
+{
+	if (Create("../Levels/Level_2.txt", "Level 2"))
+		cout << "File loaded successfully\n";
+}
+
+bool cMap_Level2::PopulateDynamics(vector<cDynamic*>& vecDyns)
+{
+	//Add Teleporters
+	vecDyns.push_back(new cDynamic_Teleport(4.0f, 0.0f, "Level 1", 0.0f, 0.0f));
+
+	for (int i = 0; i < 3; i++)
+	{
+		cDynamic* g = new cDynamic_Creature_FakeJerry();
+		vecDyns.push_back(g);
+		g->px = rand() % 10 + 5.0f;
+		g->py = 0.0f;
+	}
+
+	return true;
+}
+
+bool cMap_Level2::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature)
+{
+	if (target->sName == "Teleport")
+	{
+		// I imagine casting is okay because we are ensuring that only teleport object make it to these lines
+		g_script->AddCommand(new cCommand_ChangeMap(
+			((cDynamic_Teleport*)target)->sMapName,
+			((cDynamic_Teleport*)target)->fMapPosX,
+			((cDynamic_Teleport*)target)->fMapPosY));
+	}
+
+	return false;
 }

@@ -34,9 +34,11 @@ bool Platformer::OnUserCreate()
 	//But allows us to easily access all the
 	//public utilities from this file - our game engine
 	cCommand::g_engine = this;
+	cMap::g_script = &m_script;
 
-	//Load Sprites
+	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
+	Assets::get().LoadMaps();
 
 	//Animated
 
@@ -74,27 +76,11 @@ bool Platformer::OnUserCreate()
 
 	olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
 
-
-	//Map
-	currentMap = new cLevel1;
-
 	//Player init
 	m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
-	m_pPlayer->px = 0; //Initial pos is 0,0
-	m_pPlayer->py = 0;
 
-	//Hack in a few other objects for now
-	cDynamic_Creature* ob1 = new cDynamic_Creature("Enemy1"); //For now sprites/ anims are hard coded to be Jerry
-	ob1->px = 5; //Initial pos is 0,0
-	ob1->py = 0;
-
-	cDynamic* ob2 = new cDynamic_Creature("Enemy2"); //For now sprites/ anims are hard coded to be Jerry
-	ob2->px = 10; //Initial pos is 0,0
-	ob2->py = 0;
-
-	vecDynamics.push_back(m_pPlayer);
-	vecDynamics.push_back(ob1);
-	vecDynamics.push_back(ob2);
+	//Initial Map
+	ChangeMap("Level 1", 0, 0);
 
 	return true;
 }
@@ -184,12 +170,13 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 			if (GetKey(olc::Key::Z).bReleased)
 			{
-				CMD(MoveTo(m_pPlayer, 0, 9, 2.0f));
-				CMD(MoveTo(vecDynamics[1], 4, 4, 2.0f));
-				CMD(MoveTo(vecDynamics[2], 4, 9, 2.0f));
-				CMD(ShowDialog({ "Oh silly Jerry" }));
-				CMD(ShowDialog({ "I think OOP", "is really useful" }));
-				CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
+				CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
+				CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
+				CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
+				//CMD(ShowDialog({ "Oh silly Jerry" }));
+				//CMD(ShowDialog({ "I think OOP", "is really useful" }));
+				//CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
+				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
 
 			}
 		}
@@ -257,7 +244,7 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 		float fNewObjectPosY = object->py + object->vy * fElapsedTime;
 
 		//Check for pickups! 
-		/*if (HandlePickup(currentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
+		/*if (HandlePickup(pCurrentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
 			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
 
 		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
@@ -270,10 +257,10 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');*/
 
 
-			//Collision
+		//Collision
 		if (object->vx <= 0) //Player moving left
 		{
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+			if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
 			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
 				fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
 				object->vx = 0;
@@ -281,7 +268,7 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 		}
 		else if (object->vx > 0) //Player moving Right
 		{
-			if (currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
+			if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 			{
 				fNewObjectPosX = (int)fNewObjectPosX;
 				object->vx = 0;
@@ -290,28 +277,29 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 		}
 
 		object->bObjectOnGround = false; //Clear flag
+
 		if (object->vy <= 0) //Player moving up
 		{
 			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+			if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
 			{
 				/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
-				if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
 				{
-					currentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
-					//currentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+					pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
+					//pCurrentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
 				}
 
-				else if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+				else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
 				{
-					currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					//currentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+					pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+					//pCurrentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 				}
 
-				else if (currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+				else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
 				{
-					currentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					//currentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+					pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+					//pCurrentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 				}
 
 				/***********************************************************************************/
@@ -321,12 +309,43 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 			}
 		}
 		else //Player moving down
+		{ 
+				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+				{
+					fNewObjectPosY = (int)fNewObjectPosY;
+					object->vy = 0;
+					object->bObjectOnGround = true;
+				}
+		}
+		
+
+
+		float fDynamicObjectPosX = fNewObjectPosX;
+		float fDynamicObjectPosY = fNewObjectPosY;
+
+		// Dynamic Object Collision
+		for (auto& dyn : vecDynamics)
 		{
-			if (currentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || currentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+			if (dyn != object) // Don't check object against itself
 			{
-				fNewObjectPosY = (int)fNewObjectPosY;
-				object->vy = 0;
-				object->bObjectOnGround = true;
+				// If objects are solid then they must not overlap
+				if (dyn->bSolidVsDynamic && object->bSolidVsDynamic)
+				{
+
+				}
+				else
+				{
+					if (object == m_pPlayer)
+					{
+						//Object is the player and can interact with things
+						if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+							&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
+						{
+							// Check if interaction is map related
+							pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+						}
+					}
+				}
 			}
 		}
 
@@ -338,14 +357,14 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 
 		//Update dynamic objects
-		object->Update(fElapsedTime);
+		object->Update(fElapsedTime, m_pPlayer );
 
 		//Update tile animations
-		for (int x = 0; x < currentMap->nWidth; x++)
+		for (int x = 0; x < pCurrentMap->nWidth; x++)
 		{
-			for (int y = 0; y < currentMap->nHeight; y++)
+			for (int y = 0; y < pCurrentMap->nHeight; y++)
 			{
-				currentMap->GetTile(x, y)->Update(fElapsedTime);
+				pCurrentMap->GetTile(x, y)->Update(fElapsedTime);
 			}
 		}
 
@@ -367,8 +386,8 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	//Clamp camera to game boundaries
 	if (fOffsetX < 0) fOffsetX = 0;
 	if (fOffsetY < 0) fOffsetY = 0;
-	if (fOffsetX > currentMap->nWidth - nVisibleTilesX) fOffsetX = currentMap->nWidth - nVisibleTilesX;
-	if (fOffsetY > currentMap->nHeight - nVisibleTilesY) fOffsetY = currentMap->nHeight - nVisibleTilesY;
+	if (fOffsetX > pCurrentMap->nWidth - nVisibleTilesX) fOffsetX = pCurrentMap->nWidth - nVisibleTilesX;
+	if (fOffsetY > pCurrentMap->nHeight - nVisibleTilesY) fOffsetY = pCurrentMap->nHeight - nVisibleTilesY;
 
 	// Get offsets for smooth movement
 	float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
@@ -379,8 +398,8 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	{
 		for (int y = -1; y < nVisibleTilesY + 1; y++)
 		{
-			FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, currentMap->skyColor); //Background fill -- "sky"
-			currentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
+			FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, pCurrentMap->skyColor); //Background fill -- "sky"
+			pCurrentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
 
 			//switch (sTileID)
 			//{
@@ -520,14 +539,23 @@ void Platformer::DisplayDialog(vector<string> vecLines, int x, int y)
 	}
 }
 
-//int main()
-//{
-//	Platformer game;
-//	if (game.Construct(264, 242, 4, 4))
-//		//if (game.Construct(264, 242, 4, 4, false, true)) //VSync
-//		//if (game.Construct(264, 900, 4, 4))
-//
-//		game.Start();
-//
-//	return 0;
-//}
+void Platformer::ChangeMap(string sMapName, float x, float y)
+{
+	cMap* newMap = Assets::get().GetMap(sMapName);
+	if (newMap != nullptr) //Won't work if name passed in is wrong
+	{
+		// Destroy all dynamics - LATER USE delete FOR OBJECTS ON HEAP
+		vecDynamics.clear();
+		vecDynamics.push_back(m_pPlayer);
+
+		// Set current map
+		pCurrentMap = newMap;
+
+		// Update player location
+		m_pPlayer->px = x;
+		m_pPlayer->py = y;
+
+		// Create new dynamics from map
+		pCurrentMap->PopulateDynamics(vecDynamics);
+	}
+}
