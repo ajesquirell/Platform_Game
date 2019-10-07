@@ -4,6 +4,8 @@ using namespace std;
 
 cScriptProcessor* cMap::g_script = nullptr;
 
+#define CMD(n) g_script->AddCommand(new cCommand_ ## n)
+
 cMap::cMap()
 {
 	nWidth = 0;
@@ -152,7 +154,7 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 
 bool cMap_Level1::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature)
 {
-	if (target->sName == "Teleport")
+	if (target->sName == "Teleport" && nature == cMap::WALK)
 	{
 		// I imagine casting is okay because we are ensuring that only teleport object make it to these lines
 		g_script->AddCommand(new cCommand_ChangeMap(
@@ -175,22 +177,28 @@ cMap_Level2::cMap_Level2()
 bool cMap_Level2::PopulateDynamics(vector<cDynamic*>& vecDyns)
 {
 	//Add Teleporters
-	vecDyns.push_back(new cDynamic_Teleport(4.0f, 0.0f, "Level 1", 0.0f, 0.0f));
+	vecDyns.push_back(new cDynamic_Teleport(10.0f, 5.0f, "Level 1", 0.0f, 0.0f));
 
-	for (int i = 0; i < 3; i++)
+	/*for (int i = 0; i < 3; i++)
 	{
 		cDynamic* g = new cDynamic_Creature_FakeJerry();
 		vecDyns.push_back(g);
 		g->px = rand() % 10 + 5.0f;
 		g->py = 0.0f;
-	}
+	}*/
+
+	cDynamic_Creature* bob = new cDynamic_Creature("Bob");
+	bob->px = 5.0f;
+	bob->py = 0.0f;
+	bob->fFaceDir = -1.0f;
+	vecDyns.push_back(bob);
 
 	return true;
 }
 
 bool cMap_Level2::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature)
 {
-	if (target->sName == "Teleport")
+	if (target->sName == "Teleport" && nature == cMap::WALK)
 	{
 		// I imagine casting is okay because we are ensuring that only teleport object make it to these lines
 		g_script->AddCommand(new cCommand_ChangeMap(
@@ -199,5 +207,31 @@ bool cMap_Level2::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NA
 			((cDynamic_Teleport*)target)->fMapPosY));
 	}
 
+	if (target->sName == "Bob" && nature == cMap::TALK)
+	{
+		if (vecDyns[0]->px < target->px) //[0] is supposed to be always the player
+			((cDynamic_Creature*)target)->fFaceDir = -1.0f;
+		else
+			((cDynamic_Creature*)target)->fFaceDir = 1.0f;
+
+		//Temporarily becoming not solid vs anything during move command
+
+		//Interaction 1
+		if (target->px != 14)
+		{
+			CMD(ShowDialog({ "[Bob]", "", "Hello!", "I'm Bob!" }));
+			CMD(ShowDialog({ "[Bob]","", "Follow me!!!" }, olc::RED));
+			CMD(MoveTo(target, 14, 2, 1.5f));
+		}
+
+		//Interaction 2
+		if (target->px == 14)
+		{
+			CMD(ShowDialog({ "[Bob]", "", "Down here!" }));
+			CMD(MoveTo(target, 16, 2, 0.5f));
+		}
+
+		
+	}
 	return false;
 }

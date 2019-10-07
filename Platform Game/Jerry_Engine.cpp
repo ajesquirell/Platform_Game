@@ -168,16 +168,51 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 				}
 			}
 
-			if (GetKey(olc::Key::Z).bReleased)
+			if (GetKey(olc::Key::Z).bReleased) //TEST/DEBUG
 			{
-				CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
-				CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
-				CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
-				//CMD(ShowDialog({ "Oh silly Jerry" }));
-				//CMD(ShowDialog({ "I think OOP", "is really useful" }));
+				//CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
+				//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
+				//CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
+				CMD(ShowDialog({ "Oh silly Jerry" }));
+				CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
 				//CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
 				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
 
+			}
+
+			if (GetKey(olc::F).bPressed) // Interaction
+			{
+				// Grab a point from the direction the player is facing and check for interactions
+				float fTestX, fTestY;
+
+				if (m_pPlayer->fFaceDir == 1.0f)
+				{
+					fTestX = m_pPlayer->px + 1.5f; //Test probe in center of adjacent tile
+					fTestY = m_pPlayer->py + 0.5f;
+				}
+				if (m_pPlayer->fFaceDir == -1.0f)
+				{
+					fTestX = m_pPlayer->px - 0.5f;
+					fTestY = m_pPlayer->py + 0.5f;
+				}
+
+				// Check if test point has hit a dynamic object
+				for (auto dyns : vecDynamics)
+				{
+					if (fTestX > dyns->px && fTestX < (dyns->px + 1.0f)
+						&& fTestY > dyns->py && fTestY < (dyns->py + 1.0f))
+					{
+						if (dyns->bFriendly)
+						{
+							// Then check if it's map related
+							pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK);
+						}
+						else
+						{
+							// Interaction not friendly - only enemies - so Attack
+						}
+					}
+				}
 			}
 		}
 	}
@@ -188,7 +223,7 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 		if (bShowDialog)
 		{
-			if (GetKey(olc::Key::SPACE).bReleased)
+			if (GetKey(olc::Key::F).bPressed)
 			{
 				bShowDialog = false;
 				m_script.CompleteCommand();
@@ -255,66 +290,68 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 
 		//Collision
-		if (object->vx <= 0) //Player moving left
+		if (object->bSolidVsMap)
 		{
-			if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
-			{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
-				fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
-				object->vx = 0;
-			}
-		}
-		else if (object->vx > 0) //Player moving Right
-		{
-			if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
+			if (object->vx <= 0) //Player moving left
 			{
-				fNewObjectPosX = (int)fNewObjectPosX;
-				object->vx = 0;
+				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+				{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
+					fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
+					object->vx = 0;
+				}
 			}
-
-		}
-
-		object->bObjectOnGround = false; //Clear flag
-
-		if (object->vy <= 0) //Player moving up
-		{
-			//Already resolved X-direction collisions, so we can use the new X position and new Y position
-			if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+			else if (object->vx > 0) //Player moving Right
 			{
-				/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
-				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+				if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 				{
-					pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
-					//pCurrentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+					fNewObjectPosX = (int)fNewObjectPosX;
+					object->vx = 0;
 				}
 
-				else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
-				{
-					pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					//pCurrentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
-				}
-
-				else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
-				{
-					pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					//pCurrentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
-				}
-
-				/***********************************************************************************/
-
-				fNewObjectPosY = (int)fNewObjectPosY + 1;
-				object->vy = 0;
 			}
-		}
-		else //Player moving down
-		{ 
+
+			object->bObjectOnGround = false; //Clear flag
+
+			if (object->vy <= 0) //Player moving up
+			{
+				//Already resolved X-direction collisions, so we can use the new X position and new Y position
+				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+				{
+					/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
+					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+					{
+						pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
+						//pCurrentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+					}
+
+					else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+					{
+						pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						//pCurrentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+					}
+
+					else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+					{
+						pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						//pCurrentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
+					}
+
+					/***********************************************************************************/
+
+					fNewObjectPosY = (int)fNewObjectPosY + 1;
+					object->vy = 0;
+				}
+			}
+			else //Player moving down
+			{
 				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
 				{
 					fNewObjectPosY = (int)fNewObjectPosY;
 					object->vy = 0;
 					object->bObjectOnGround = true;
 				}
+			}
 		}
-		
 
 
 		float fDynamicObjectPosX = fNewObjectPosX;
@@ -535,10 +572,11 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	return true;
 }
 
-void Platformer::ShowDialog(vector<string> vecLines)
+void Platformer::ShowDialog(vector<string> vecLines, olc::Pixel color)
 {
 	vecDialogToShow = vecLines;
 	bShowDialog = true;
+	dialogColor = color;
 }
 
 void Platformer::DisplayDialog(vector<string> vecLines, int x, int y)
@@ -550,11 +588,8 @@ void Platformer::DisplayDialog(vector<string> vecLines, int x, int y)
 	for (auto l : vecLines) if (l.size() > nMaxLineLength) nMaxLineLength = l.size();
 
 	// Draw Box (Default Font size is 8x8, so that constant is used here)
-	FillRect(x - 1, y - 1, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1, olc::DARK_BLUE);
-	DrawLine(x - 2, y - 2, x - 2, y + nLines * 8 + 1);
-	DrawLine(x + nMaxLineLength * 8 + 1, y - 2, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1);
-	DrawLine(x - 2, y - 2, x + nMaxLineLength * 8 + 1, y - 2);
-	DrawLine(x - 2, y + nLines * 8 + 1, x + nMaxLineLength * 8 + 1, y + nLines * 8 + 1);
+	FillRect(x - 1, y - 1, nMaxLineLength * 8 + 2, nLines * 8 + 2, dialogColor);
+	DrawRect(x - 2, y - 2, nMaxLineLength * 8 + 3, nLines * 8 + 3);
 
 	for (int l = 0; l < vecLines.size(); l++)
 	{

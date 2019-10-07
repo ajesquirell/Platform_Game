@@ -82,7 +82,7 @@ public:
 	bool OnUserDestroy();
 	bool OnUserUpdate(float fElapsedTime) override;
 
-	void ShowDialog(vector<string> vecLines);
+	void ShowDialog(vector<string> vecLines, olc::Pixel color = olc::DARK_BLUE);
 	void DisplayDialog(vector<string> vecLines, int x, int y);
 	void ChangeMap(string sMapName, float x, float y);
 
@@ -91,4 +91,5 @@ public:
 	bool bShowDialog = false;
 	float fDialogX = 0.0f;
 	float fDialogY = 0.0f;
+	olc::Pixel dialogColor = olc::DARK_BLUE;
 };

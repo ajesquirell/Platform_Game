@@ -67,11 +67,12 @@ private:
 class cCommand_ShowDialog : public cCommand
 {
 public:
-	cCommand_ShowDialog(std::vector<std::string> lines);
+	cCommand_ShowDialog(std::vector<std::string> lines, olc::Pixel color = olc::DARK_BLUE);
 	void Start() override;
 
 private:
 	std::vector<std::string> vecLines;
+	olc::Pixel dialogColor;
 };
 
 class cCommand_ChangeMap : public cCommand

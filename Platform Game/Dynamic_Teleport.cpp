@@ -8,7 +8,7 @@ cDynamic_Teleport::cDynamic_Teleport(float x, float y, std::string mapName, floa
 	fMapPosY = ty;
 	sMapName = mapName;
 	bSolidVsDynamic = false;
-	bSolidVsMap = false;
+	bSolidVsMap = true;
 }
 
 void cDynamic_Teleport::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy)

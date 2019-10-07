@@ -75,6 +75,9 @@ void cCommand_MoveTo::Start()
 {
 	m_fStartPosX = m_pObject->px;
 	m_fStartPosY = m_pObject->py;
+
+	m_pObject->bSolidVsDynamic = false; // HACK IN - So things don't push everything else around
+	m_pObject->bSolidVsMap = false;
 }
 
 void cCommand_MoveTo::Update(float fElapsedTime) //Could eventually do path planning using solid tiles! A* ?
@@ -96,14 +99,19 @@ void cCommand_MoveTo::Update(float fElapsedTime) //Could eventually do path plan
 		m_pObject->py = m_fTargetPosY;
 		m_pObject->vx = 0.0f;
 		m_pObject->vy = 0.0f;
+
+		m_pObject->bSolidVsDynamic = true; // Restore to true - assuming that it was true to start with. Should restore to actual value but this is quick hack for now
+		m_pObject->bSolidVsMap = true;
+
 		bCompleted = true;
 	}
 }
 
 /*--------------------   Show Dialog   -------------------*/
-cCommand_ShowDialog::cCommand_ShowDialog(vector<string> lines)
+cCommand_ShowDialog::cCommand_ShowDialog(vector<string> lines, olc::Pixel color)
 {
 	vecLines = lines;
+	dialogColor = color;
 }
 
 void cCommand_ShowDialog::Start() 
@@ -114,7 +122,7 @@ void cCommand_ShowDialog::Start()
 	//This is the only spaghetti code, but we could probably not to this at all
 
 	// Need communication with game engine, since it is responsible for drawing to screen
-	g_engine->ShowDialog(vecLines);
+	g_engine->ShowDialog(vecLines, dialogColor);
 }
 
 /*--------------------   Change Map   -------------------*/

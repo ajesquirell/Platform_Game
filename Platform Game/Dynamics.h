@@ -39,13 +39,12 @@ class cDynamic_Creature : public cDynamic
 public:
 	cDynamic_Creature(std::string n);
 
-protected:
-	cAnimator animations; ///Can private members be accessed by the eventual player and enemy classes by using methods of this class like ChagneState??
+	enum FacingDirection{LEFT, RIGHT};
 
 public:
 	int nHealth;
 	int nMaxHealth;
-	float fFaceDir; //For player handled in input, but for other creatures should be handled in their behavior based on their calculated destination position relative to their current pos
+	float fFaceDir; //For player, handled in input, but for other creatures should be handled in their behavior based on their calculated destination position relative to their current pos
 	bool bSquat;
 
 public:
@@ -56,6 +55,7 @@ public:
 	virtual void Behavior(float fElapsedTime, cDynamic* player = nullptr);
 
 protected:
+	cAnimator animations; ///Can private members be accessed by the eventual player and enemy classes by using methods of this class like ChagneState??
 	float fStateTick;
 };
 
