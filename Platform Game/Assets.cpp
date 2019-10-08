@@ -86,3 +86,14 @@ void Assets::LoadMaps()
 	load(new cMap_Level1);
 	load(new cMap_Level2);
 }
+
+void Assets::LoadItems()
+{
+	auto load = [&](cItem* item)
+	{
+		mapItems[item->sName] = item;
+	};
+
+	load(new cItem_Health);
+	load(new cItem_HealthBoost);
+}

@@ -4,7 +4,7 @@
 cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
 	nHealth = 10;
-	nMaxHealth = 10;
+	nHealthMax = 10;
 	fFaceDir = +1.0f;
 	bSquat = false;
 
@@ -35,7 +35,7 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) //Screen space offset, since we already have position as data member
 {
 	olc::GFX2D::Transform2D t;
-	t.Translate(-22 / 2, -22 / 2); //Align player sprite to 0,0 to do affine transformations
+	t.Translate(-22 / 2, -22 / 2); //Align sprite to 0,0 to do affine transformations
 	t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
 	//t.Rotate(fPlayerPosX);

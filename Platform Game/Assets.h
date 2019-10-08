@@ -1,11 +1,11 @@
 #pragma once
 
-#include "olcPixelGameEngine.h"
-
 #include <iostream>
 #include <map>
 
+#include "olcPixelGameEngine.h"
 #include "Maps.h"
+#include "Items.h"
 //class cMap; //Because we can't include Maps.h - Maps.h includes Tiles.h which includes this header.
 
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
@@ -38,8 +38,17 @@ public:
 		return mapMaps[name];
 	}
 
+	cItem* GetItem(std::string name)
+	{
+		if (mapItems[name] == nullptr)
+			std::cerr << "\nError: Could not retrieve item with the name \"" << name << "\". Please ensure it exists on disk and is loaded from Assets class.\n";
+
+		return mapItems[name];
+	}
+
 	void LoadSprites();
 	void LoadMaps();
+	void LoadItems();
 
 private:
 	Assets();
@@ -47,5 +56,6 @@ private:
 
 	std::map<std::string, olc::Sprite*> mapSprites;
 	std::map<std::string, cMap*> mapMaps;
+	std::map<std::string, cItem*> mapItems;
 };
 

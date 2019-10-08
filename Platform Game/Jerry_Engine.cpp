@@ -35,6 +35,7 @@ bool Platformer::OnUserCreate()
 	//public utilities from this file - our game engine
 	cCommand::g_engine = this;
 	cQuest::g_engine = this;
+	cDynamic::g_engine = this;
 
 	cMap::g_script = &m_script;
 	cQuest::g_script = &m_script;
@@ -42,6 +43,7 @@ bool Platformer::OnUserCreate()
 	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 	Assets::get().LoadMaps();
+	Assets::get().LoadItems();
 
 	//Animated
 
@@ -80,7 +82,7 @@ bool Platformer::OnUserCreate()
 	olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
 
 	//Add First Quest
-	listQuests.push_front(new cQuest_TestQuest());
+	listQuests.push_front(new cQuest_MainQuest());
 
 	//Player init
 	m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
@@ -215,13 +217,12 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 							// --Base quest should capture interactions not specified by other quests
 							
 							// Check if it's quest related
-							/*for (auto &quest : listQuests)
+							for (auto &quest : listQuests)
 								if (quest->OnInteraction(vecDynamics, dyns, cQuest::TALK))
 								{
 									bInteraction = true;
 									break;
-								}*/
-							listQuests.front()->OnInteraction(vecDynamics, dyns, cQuest::TALK);
+								}
 							
 							// Then check if it's map related
 							pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK);
@@ -422,6 +423,9 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 						{
 							// Check if interaction is map related
 							pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+
+							//Finally just check the object - (for items, non-important characters, etc)
+							dyn->OnInteract(object);
 						}
 					}
 				}
@@ -649,4 +653,31 @@ void Platformer::ChangeMap(string sMapName, float x, float y)
 void Platformer::AddQuest(cQuest* quest)
 {
 	listQuests.push_front(quest);
+}
+
+bool Platformer::GiveItem(cItem* item)
+{
+	listItems.push_back(item);
+	return true;
+}
+
+bool Platformer::TakeItem(cItem* item)
+{
+	if (item != nullptr)
+	{
+		listItems.erase(find(listItems.begin(), listItems.end(), item));
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Platformer::HasItem(cItem* item)
+{
+	if (item != nullptr)
+	{
+		return find(listItems.begin(), listItems.end(), item) != listItems.end();
+	}
+	else
+		return false;
 }

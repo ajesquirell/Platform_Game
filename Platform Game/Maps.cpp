@@ -1,4 +1,5 @@
 #include "Maps.h"
+#include "Assets.h"
 #include <fstream>
 using namespace std;
 
@@ -141,6 +142,9 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 	//Add Teleporters
 	vecDyns.push_back(new cDynamic_Teleport(7.0f, 9.0f, "Level 2", 0.0f, 0.0f));
 
+	//Add Items
+	vecDyns.push_back(new cDynamic_Item(1, 9, Assets::get().GetItem("Small Health")));
+
 	for (int i = 0; i < 3; i++)
 	{
 		cDynamic* g = new cDynamic_Creature_FakeJerry();
@@ -179,20 +183,6 @@ bool cMap_Level2::PopulateDynamics(vector<cDynamic*>& vecDyns)
 	//Add Teleporters
 	vecDyns.push_back(new cDynamic_Teleport(10.0f, 5.0f, "Level 1", 0.0f, 0.0f));
 
-	/*for (int i = 0; i < 3; i++)
-	{
-		cDynamic* g = new cDynamic_Creature_FakeJerry();
-		vecDyns.push_back(g);
-		g->px = rand() % 10 + 5.0f;
-		g->py = 0.0f;
-	}*/
-
-	/*cDynamic_Creature* bob = new cDynamic_Creature("Bob");
-	bob->px = 5.0f;
-	bob->py = 0.0f;
-	bob->fFaceDir = -1.0f;
-	vecDyns.push_back(bob);*/
-
 	return true;
 }
 
@@ -207,31 +197,31 @@ bool cMap_Level2::OnInteraction(vector<cDynamic*>& vecDyns, cDynamic* target, NA
 			((cDynamic_Teleport*)target)->fMapPosY));
 	}
 
-	//if (target->sName == "Bob" && nature == cMap::TALK)
-	//{
-	//	if (vecDyns[0]->px < target->px) //[0] is supposed to be always the player
-	//		((cDynamic_Creature*)target)->fFaceDir = -1.0f;
-	//	else
-	//		((cDynamic_Creature*)target)->fFaceDir = 1.0f;
+	if (target->sName == "Bob" && nature == cMap::TALK)
+	{
+		if (vecDyns[0]->px < target->px) //[0] is supposed to be always the player
+			((cDynamic_Creature*)target)->fFaceDir = -1.0f;
+		else
+			((cDynamic_Creature*)target)->fFaceDir = 1.0f;
 
-	//	//Temporarily becoming not solid vs anything during move command
+		//Temporarily becoming not solid vs anything during move command
 
-	//	//Interaction 1
-	//	if (target->px != 14)
-	//	{
-	//		CMD(ShowDialog({ "[Bob]", "", "Hello!", "I'm Bob!" }));
-	//		CMD(ShowDialog({ "[Bob]","", "Follow me!!!" }, olc::RED));
-	//		CMD(MoveTo(target, 14, 2, 1.5f));
-	//	}
+		//Interaction 1
+		if (target->px != 14)
+		{
+			CMD(ShowDialog({ "[Bob]", "", "Hello!", "I'm Bob!" }));
+			CMD(ShowDialog({ "[Bob]","", "Follow me!!!" }, olc::RED));
+			CMD(MoveTo(target, 14, 2, 1.5f));
+		}
 
-	//	//Interaction 2
-	//	if (target->px == 14)
-	//	{
-	//		CMD(ShowDialog({ "[Bob]", "", "Down here!" }));
-	//		CMD(MoveTo(target, 16, 2, 0.5f));
-	//	}
+		//Interaction 2
+		if (target->px == 14)
+		{
+			CMD(ShowDialog({ "[Bob]", "", "Down here!" }));
+			CMD(MoveTo(target, 16, 2, 0.5f));
+		}
 
-	//	
-	//}
+		
+	}
 	return false;
 }

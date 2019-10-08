@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <algorithm>
 using namespace std;
 
 #include "Assets.h"
@@ -18,6 +19,7 @@ using namespace std;
 #include "Dynamics.h"
 #include "Commands.h"
 #include "Quests.h"
+#include "Items.h"
 
 class Platformer : public olc::PixelGameEngine
 {
@@ -36,6 +38,7 @@ private:
 	cScriptProcessor m_script;
 
 	list<cQuest*> listQuests;
+	list<cItem*> listItems;
 
 
 	//Camera Properties
@@ -89,6 +92,11 @@ public:
 	void DisplayDialog(vector<string> vecLines, int x, int y);
 	void ChangeMap(string sMapName, float x, float y);
 	void AddQuest(cQuest* quest);
+
+	//Inventory handling convenience
+	bool GiveItem(cItem* item);
+	bool TakeItem(cItem* item);
+	bool HasItem(cItem* item);
 
 public:
 	vector<string> vecDialogToShow;

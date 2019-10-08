@@ -4,7 +4,7 @@ cDynamic_Creature_FakeJerry::cDynamic_Creature_FakeJerry() : cDynamic_Creature("
 {
 	bFriendly = false;
 	nHealth = 10;
-	nMaxHealth = 10;
+	nHealthMax = 10;
 	fStateTick = 2.0f;
 
 	fDirectionX = 0.0f;

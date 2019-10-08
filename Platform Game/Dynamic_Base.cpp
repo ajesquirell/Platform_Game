@@ -1,6 +1,7 @@
 #include "Dynamics.h"
-
 using namespace std;
+
+Platformer* cDynamic::g_engine = nullptr;
 
 cDynamic::cDynamic(string n)
 {

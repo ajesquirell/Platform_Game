@@ -24,7 +24,9 @@
     <ClCompile Include="Dynamic_Base.cpp" />
     <ClCompile Include="Dynamic_Creature.cpp" />
     <ClCompile Include="Dynamic_Creature_FakeJerry.cpp" />
+    <ClCompile Include="Dynamic_Item.cpp" />
     <ClCompile Include="Dynamic_Teleport.cpp" />
+    <ClCompile Include="Items.cpp" />
     <ClCompile Include="Jerry_Engine.cpp" />
     <ClCompile Include="Jerry_Engine_Copy.cpp" />
     <ClCompile Include="Maps.cpp" />
@@ -37,6 +39,7 @@
     <ClInclude Include="Assets.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="Dynamics.h" />
+    <ClInclude Include="Items.h" />
     <ClInclude Include="Jerry_Engine.h" />
     <ClInclude Include="Maps.h" />
     <ClInclude Include="olcPGEX_Graphics2D.h" />

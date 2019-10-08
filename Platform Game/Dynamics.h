@@ -3,11 +3,12 @@
 #include "olcPixelGameEngine.h"
 #include "Animator.h"
 
+class Platformer;
+class cItem;
+
 //================================================================================================
 //											Base Dynamic
 //================================================================================================
-
-
 class cDynamic //Pure Virtual
 {
 public:
@@ -27,13 +28,14 @@ public:
 public:
 	virtual void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) = 0; //Screen space offset, since we already have position as data member
 	virtual void Update(float fElapsedTime, cDynamic* player = nullptr) {}
+	virtual void OnInteract(cDynamic* player = nullptr) {}
 
+	static Platformer* g_engine;
 };
 
 //================================================================================================
 //											Dynamic Creature
 //================================================================================================
-
 class cDynamic_Creature : public cDynamic
 {
 public:
@@ -43,7 +45,7 @@ public:
 
 public:
 	int nHealth;
-	int nMaxHealth;
+	int nHealthMax;
 	float fFaceDir; //For player, handled in input, but for other creatures should be handled in their behavior based on their calculated destination position relative to their current pos
 	bool bSquat;
 
@@ -62,7 +64,6 @@ protected:
 //================================================================================================
 //											Dynamic Creature - Fake Jerry
 //================================================================================================
-
 class cDynamic_Creature_FakeJerry : public cDynamic_Creature
 {
 public:
@@ -76,7 +77,6 @@ private:
 //================================================================================================
 //											Dynamic Teleport
 //================================================================================================
-
 class cDynamic_Teleport : public cDynamic
 {
 public:
@@ -88,4 +88,19 @@ public:
 	std::string sMapName;
 	float fMapPosX;
 	float fMapPosY;
+};
+
+//================================================================================================
+//											Dynamic Item
+//================================================================================================
+class cDynamic_Item : public cDynamic
+{
+public:
+	cDynamic_Item(float x, float y, cItem* item);
+	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override;
+	void OnInteract(cDynamic* player = nullptr) override;
+
+public:
+	cItem* item;
+	bool bCollected = false;
 };

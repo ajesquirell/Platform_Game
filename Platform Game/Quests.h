@@ -31,9 +31,22 @@ public:
 
 
 //================================================================================================
-//											Test Quest
+//											Main/Base Quest
 //================================================================================================
-class cQuest_TestQuest : public cQuest
+class cQuest_MainQuest : public cQuest
+{
+public:
+	bool PopulateDynamics(std::vector<cDynamic*>& vecDyns, std::string sMapName) override;
+	bool OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature) override;
+
+private:
+	int nPhase = 0;
+};
+
+//================================================================================================
+//											Bob's Quest
+//================================================================================================
+class cQuest_BobsQuest : public cQuest
 {
 public:
 	bool PopulateDynamics(std::vector<cDynamic*>& vecDyns, std::string sMapName) override;
