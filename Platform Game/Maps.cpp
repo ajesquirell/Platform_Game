@@ -144,6 +144,7 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 
 	//Add Items
 	vecDyns.push_back(new cDynamic_Item(1, 9, Assets::get().GetItem("Small Health")));
+	vecDyns.push_back(new cDynamic_Item(2, 9, Assets::get().GetItem("Health Boost")));
 
 	for (int i = 0; i < 3; i++)
 	{

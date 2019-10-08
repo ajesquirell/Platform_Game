@@ -40,10 +40,23 @@ private:
 	list<cQuest*> listQuests;
 	list<cItem*> listItems;
 
-
 	//Camera Properties
 	float fCameraPosX = 0.0f;
 	float fCameraPosY = 0.0f;
+
+	enum
+	{
+		MODE_TITLE,
+		MODE_LOCAL_MAP,
+		MODE_WORLD_MAP,
+		MODE_INVENTORY,
+		MODE_SHOP
+	};
+
+	int nGameMode = MODE_LOCAL_MAP;
+
+	int nInvSelectX = 0;
+	int nInvSelectY = 0;
 
 	//Sprite Resources
 	olc::Sprite* spriteFloor = nullptr;
@@ -79,6 +92,7 @@ private:
 
 	//Debug + Testing
 	bool showDebug = true;
+	float fStateTick;
 
 
 public:
@@ -87,6 +101,12 @@ public:
 	bool OnUserCreate() override;
 	bool OnUserDestroy();
 	bool OnUserUpdate(float fElapsedTime) override;
+
+	//bool UpdateTitleScreen(float fElapsedTime);
+	bool UpdateLocalMap(float fElapsedTime);
+	//bool UpdateWorldMap(float fElapsedTime);
+	bool UpdateInventory(float fElapsedTime);
+	//bool UpdateShop(float fElapsedTime);
 
 	void ShowDialog(vector<string> vecLines, olc::Pixel color = olc::DARK_BLUE);
 	void DisplayDialog(vector<string> vecLines, int x, int y);

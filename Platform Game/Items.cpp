@@ -26,7 +26,7 @@ bool cItem::OnUse(cDynamic* object)
 cItem_Health::cItem_Health() : 
 	cItem("Small Health", "Restores 10 Health")
 {
-	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_00"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_09"));
 	animItem.ChangeState("default");
 }
 
@@ -53,6 +53,8 @@ bool cItem_Health::OnUse(cDynamic* object)
 cItem_HealthBoost::cItem_HealthBoost() : 
 	cItem("Health Boost", "Increases Max Health by 10")
 {
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_00"));
+	animItem.ChangeState("default");
 }
 
 bool cItem_HealthBoost::OnInteract(cDynamic* object)

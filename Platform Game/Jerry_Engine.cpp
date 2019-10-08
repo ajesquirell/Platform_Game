@@ -90,6 +90,9 @@ bool Platformer::OnUserCreate()
 	//Initial Map
 	ChangeMap("Level 1", 0, 0);
 
+	//HACKKKK
+	m_pPlayer->nHealth = 5;
+
 	return true;
 }
 
@@ -119,6 +122,28 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 		DrawString(ScreenWidth() / 2.5f, ScreenHeight() / 2.5f, "Paused");
 		return true; //Game loop won't execute
 	}
+
+	//Check Game Mode
+	switch (nGameMode)
+	{
+	//case MODE_TITLE:
+		//return UpdateTitleScreen(fElapsedTime);
+	case MODE_LOCAL_MAP:
+		return UpdateLocalMap(fElapsedTime);
+	//case MODE_WORLD_MAP:
+		//return UpdateWorldMap(fElapsedTime);
+	case MODE_INVENTORY:
+		return UpdateInventory(fElapsedTime);
+	//case MODE_SHOP:
+		//return UpdateShop(fElapsedTime);
+	}
+
+	return true;
+}
+
+
+bool Platformer::UpdateLocalMap(float fElapsedTime)
+{
 
 	//Update script
 	m_script.ProcessCommands(fElapsedTime);
@@ -181,11 +206,11 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 				//CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
 				//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
 				//CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
-				CMD(ShowDialog({ "Oh silly Jerry" }));
-				CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
+				//CMD(ShowDialog({ "Oh silly Jerry" }));
+				//CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
 				//CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
 				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
-
+				nGameMode = MODE_INVENTORY;
 			}
 
 			if (GetKey(olc::F).bPressed) // Interaction
@@ -223,7 +248,9 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 									bInteraction = true;
 									break;
 								}
-							
+							// Some objects just do stuff when you interact with them
+							dyns->OnInteract(m_pPlayer);
+
 							// Then check if it's map related
 							pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK);
 						}
@@ -557,13 +584,18 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 
 	m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
 
+	// Draw Score
+	sScoreString = "Flames Cash: " + to_string(nPlayerScore);
+	DrawString(0, 0, sScoreString, olc::RED);
+
+	// Draw Health
+	string sHealth = "HP: " + to_string(m_pPlayer->nHealth) + "/" + to_string(m_pPlayer->nHealthMax);
+	DisplayDialog({ sHealth }, ScreenWidth() * 0.08f, 10);
+
 	// Draw any dialog being displayed
 	if (bShowDialog)
 		DisplayDialog(vecDialogToShow, 20, 20);
 
-	//Draw Score
-	sScoreString = "Flames Cash: " + to_string(nPlayerScore);
-	DrawString(0, 0, sScoreString, olc::RED);
 
 	/*
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -585,7 +617,7 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	*/
 
 	DrawString(140, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
-	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
+	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P, Interact: F", olc::DARK_BLUE);
 
 	//Game end (for now of course)
 	if (nPlayerScore >= 370)
@@ -680,4 +712,58 @@ bool Platformer::HasItem(cItem* item)
 	}
 	else
 		return false;
+}
+
+bool Platformer::UpdateInventory(float fElapsedTime)
+{
+	fStateTick += fElapsedTime;
+	olc::Pixel inventoryBackground = olc::BLUE;
+	inventoryBackground.a = 0x1C;
+	//inventoryBackground.a = 0x01;
+
+
+	if (fStateTick >= 0.01f)
+	{
+		SetPixelMode(olc::Pixel::ALPHA);
+		SetPixelBlend(0.02f);
+		FillRect(0, 0, ScreenWidth(), ScreenHeight(), inventoryBackground); //No Idea why it fades instead of making background transparent, but we're going with it
+		SetPixelBlend(1.0f);
+		SetPixelMode(olc::Pixel::MASK);
+		fStateTick -= 0.01f;
+	}
+
+	DrawString(4, 4, "INVENTORY", olc::WHITE, 2);
+
+	int i = 0;
+	cItem* highlighted = nullptr;
+
+	// Draw Consumables
+	for (auto& item : listItems)
+	{
+		int x = i % 4;
+		int y = i / 4;
+		i++;
+
+		olc::GFX2D::Transform2D t;
+		t.Translate(8 + x * 26, 26 + y * 26);
+		item->animItem.DrawSelf(this, t);
+
+		if (nInvSelectX == x && nInvSelectY == y)
+			highlighted = item;
+	}
+
+	//Draw selection rectangle
+	DrawRect(6 + nInvSelectX * 26, 24 + nInvSelectY * 26, 30, 26);
+
+	if (GetKey(olc::LEFT).bPressed) nInvSelectX--;
+	if (GetKey(olc::RIGHT).bPressed) nInvSelectX++;
+	if (GetKey(olc::UP).bPressed) nInvSelectY--;
+	if (GetKey(olc::DOWN).bPressed) nInvSelectY++;
+	if (GetKey(olc::Z).bReleased) nGameMode = MODE_LOCAL_MAP;
+	if (nInvSelectX < 0) nInvSelectX = 3;
+	if (nInvSelectX >= 4) nInvSelectX = 0;
+	if (nInvSelectY < 0) nInvSelectY = 3;
+	if (nInvSelectY >= 4) nInvSelectY = 0;
+
+	return true;
 }
