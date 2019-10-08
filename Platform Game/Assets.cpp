@@ -59,7 +59,7 @@ void Assets::LoadSprites() //Single one time load of all sprite resources
 
 	load("Jerry_Fall", "../Sprites/Jerry_Fall.png");
 
-	//Money
+	 //Money
 	 load("Money_00", "../Sprites/Money/Money_00.png");
 	 load("Money_01", "../Sprites/Money/Money_01.png");
 	 load("Money_02", "../Sprites/Money/Money_02.png");
@@ -74,6 +74,9 @@ void Assets::LoadSprites() //Single one time load of all sprite resources
 	 load("Money_11", "../Sprites/Money/Money_11.png");
 	 load("Money_12", "../Sprites/Money/Money_12.png");
 	 load("Money_13", "../Sprites/Money/Money_13.png");
+
+	 //Random
+	 load("Hi_Mom", "../Sprites/Hi_Mom.png");
 }
 
 void Assets::LoadMaps()

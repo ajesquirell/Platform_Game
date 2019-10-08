@@ -53,7 +53,7 @@ bool cItem_Health::OnUse(cDynamic* object)
 cItem_HealthBoost::cItem_HealthBoost() : 
 	cItem("Health Boost", "Increases Max Health by 10")
 {
-	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_00"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
 	animItem.ChangeState("default");
 }
 

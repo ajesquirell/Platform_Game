@@ -57,6 +57,10 @@ private:
 
 	int nInvSelectX = 0;
 	int nInvSelectY = 0;
+	float fStateTick; //For inventory background fading
+	olc::Sprite* backBuff; //Save state of current frame for background of transparent inventory screen
+	olc::Pixel inventoryColor;
+
 
 	//Sprite Resources
 	olc::Sprite* spriteFloor = nullptr;
@@ -92,7 +96,7 @@ private:
 
 	//Debug + Testing
 	bool showDebug = true;
-	float fStateTick;
+	
 
 
 public:

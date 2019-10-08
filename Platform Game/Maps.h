@@ -67,7 +67,6 @@ class cMap_Level2 : public cMap
 {
 public:
 	cMap_Level2();
-
 	bool PopulateDynamics(std::vector<cDynamic*>& vecDyns) override;
 	bool OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* target, NATURE nature) override;
 };

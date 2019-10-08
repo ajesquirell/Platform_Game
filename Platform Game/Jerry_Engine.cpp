@@ -7,6 +7,7 @@ Platformer::Platformer()
 	sAppName = "LU Platformer";
 }
 
+
 bool Platformer::HandlePickup(wchar_t c) //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
 {
 	bool success = false; //In case we add a pickup and don't implement it here, it will return false.
@@ -39,6 +40,12 @@ bool Platformer::OnUserCreate()
 
 	cMap::g_script = &m_script;
 	cQuest::g_script = &m_script;
+
+	//Initialize "back buffer" - really just for inventory background
+	backBuff = new olc::Sprite(ScreenWidth(), ScreenHeight());
+
+	//Inventory background color
+	inventoryColor = olc::BLACK;
 
 	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
@@ -92,6 +99,9 @@ bool Platformer::OnUserCreate()
 
 	//HACKKKK
 	m_pPlayer->nHealth = 5;
+	
+	
+
 
 	return true;
 }
@@ -184,6 +194,12 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
 			}
 
+			if (GetKey(olc::Key::A).bReleased) //Access Inventory
+			{
+				inventoryColor.a = 0; //Reset alpha to do fading
+				nGameMode = MODE_INVENTORY;
+			}
+
 			if (GetKey(olc::Key::SPACE).bPressed)
 			{
 				if (m_pPlayer->bObjectOnGround)
@@ -201,7 +217,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				}
 			}
 
-			if (GetKey(olc::Key::Z).bReleased) //TEST/DEBUG
+			if (GetKey(olc::Key::Z).bPressed) //TEST/DEBUG
 			{
 				//CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
 				//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
@@ -210,7 +226,6 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				//CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
 				//CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
 				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
-				nGameMode = MODE_INVENTORY;
 			}
 
 			if (GetKey(olc::F).bPressed) // Interaction
@@ -508,6 +523,8 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	float fTileOffsetX = (fOffsetX - (int)fOffsetX) * nTileWidth;
 	float fTileOffsetY = (fOffsetY - (int)fOffsetY) * nTileHeight;
 
+	SetDrawTarget(backBuff);
+
 	//Draw visible tile map (overdraw to prevent weird artifacts at screen edges)
 	for (int x = -1; x < nVisibleTilesX + 1; x++)
 	{
@@ -583,6 +600,9 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 		object->DrawSelf(this, fOffsetX, fOffsetY);
 
 	m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
+
+	SetDrawTarget(nullptr);
+	DrawSprite(0, 0, backBuff);
 
 	// Draw Score
 	sScoreString = "Flames Cash: " + to_string(nPlayerScore);
@@ -716,20 +736,26 @@ bool Platformer::HasItem(cItem* item)
 
 bool Platformer::UpdateInventory(float fElapsedTime)
 {
+	//Have inventory color somehow related to the map's sky color so that it will look uniform depending on the sky?
+
 	fStateTick += fElapsedTime;
-	olc::Pixel inventoryBackground = olc::BLUE;
-	inventoryBackground.a = 0x1C;
-	//inventoryBackground.a = 0x01;
-
-
-	if (fStateTick >= 0.01f)
+	if (fStateTick >= 0.02f)
 	{
+		if (inventoryColor.a + 35 < 255)
+			inventoryColor.a += 35;
+
+		fStateTick -= 0.02f;
+
+
+		//Draw Background
+		DrawSprite(0, 0, backBuff);
+
+		//Draw Fading Background overlay
 		SetPixelMode(olc::Pixel::ALPHA);
-		SetPixelBlend(0.02f);
-		FillRect(0, 0, ScreenWidth(), ScreenHeight(), inventoryBackground); //No Idea why it fades instead of making background transparent, but we're going with it
+		SetPixelBlend(0.7f);
+		FillRect(0, 0, ScreenWidth(), ScreenHeight(), inventoryColor);
 		SetPixelBlend(1.0f);
 		SetPixelMode(olc::Pixel::MASK);
-		fStateTick -= 0.01f;
 	}
 
 	DrawString(4, 4, "INVENTORY", olc::WHITE, 2);
@@ -745,25 +771,66 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 		i++;
 
 		olc::GFX2D::Transform2D t;
-		t.Translate(8 + x * 26, 26 + y * 26);
+		t.Translate(8 + x * 25, 26 + y * 25);
 		item->animItem.DrawSelf(this, t);
 
 		if (nInvSelectX == x && nInvSelectY == y)
 			highlighted = item;
 	}
 
-	//Draw selection rectangle
-	DrawRect(6 + nInvSelectX * 26, 24 + nInvSelectY * 26, 30, 26);
+	//Draw selection rectangle  ---  MAKE THIS FADE TOO
+	DrawRect(6 + nInvSelectX * 25, 24 + nInvSelectY * 25, 25, 25);
 
 	if (GetKey(olc::LEFT).bPressed) nInvSelectX--;
 	if (GetKey(olc::RIGHT).bPressed) nInvSelectX++;
 	if (GetKey(olc::UP).bPressed) nInvSelectY--;
 	if (GetKey(olc::DOWN).bPressed) nInvSelectY++;
-	if (GetKey(olc::Z).bReleased) nGameMode = MODE_LOCAL_MAP;
 	if (nInvSelectX < 0) nInvSelectX = 3;
 	if (nInvSelectX >= 4) nInvSelectX = 0;
 	if (nInvSelectY < 0) nInvSelectY = 3;
 	if (nInvSelectY >= 4) nInvSelectY = 0;
+
+	if (GetKey(olc::A).bReleased)
+	{
+		nGameMode = MODE_LOCAL_MAP;
+	}
+
+	if (highlighted != nullptr)
+	{
+		DrawString(8, 160, "SELECTED:");
+		DrawString(8, 170, highlighted->sName);
+
+		DrawString(8, 190, "DESCRIPTION:");
+		DrawString(8, 200, highlighted->sDescription);
+
+		if (!highlighted->bKeyItem)
+		{
+			DrawString(80, 160, "(Press F to use)");
+		}
+
+		if (GetKey(olc::F).bPressed)
+		{
+			//Use selected item
+			if (!highlighted->bKeyItem)
+			{
+				if (highlighted->OnUse(m_pPlayer))
+				{
+					// Item has signaled it has been (fully) used, so remove it
+					TakeItem(highlighted);
+				}
+			}
+			else
+			{
+				
+			}
+		}
+	}
+
+	DrawString(128, 20, "LOCATION:");
+	DrawString(128, 28, pCurrentMap->sName);
+
+	DrawString(128, 44, "HEALTH:" + to_string(m_pPlayer->nHealth));
+	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
 
 	return true;
 }

@@ -177,6 +177,8 @@ cMap_Level2::cMap_Level2()
 {
 	if (Create("../Levels/Level_2.txt", "Level 2"))
 		cout << "File loaded successfully\n";
+
+	skyColor = olc::DARK_RED;
 }
 
 bool cMap_Level2::PopulateDynamics(vector<cDynamic*>& vecDyns)
