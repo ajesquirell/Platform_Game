@@ -56,16 +56,25 @@ private:
 
 	int nGameMode = MODE_LOCAL_MAP;
 
-	int nInvSelectX = 0;
-	int nInvSelectY = 0;
-	vector<int> vecInvSelectX;
-	vector<int> vecInvSelectY;
-	vector<uint8_t> vecInvAlphas;
-	float fStateTick; //For inventory background fading
-	olc::Sprite* backBuff; //Save state of current frame for background of transparent inventory screen
+	/*==============INVENTORY===============*/
+	int8_t nInvSelectX = 0; //NEEDS to be signed (so it can go to -1 in the inventory update fcn)
+	int8_t nInvSelectY = 0;
+	struct InvSelect
+	{
+		InvSelect(uint8_t x, uint8_t y, uint8_t a) { this->x = x; this->y = y, alpha = a; }
+		uint8_t x;
+		uint8_t y;
+		uint8_t alpha;
+	};
+	std::vector<InvSelect*> vecInvSelect;
+
 	olc::Pixel inventoryColor;
 	olc::Pixel rectColor;
 
+	float fInvStateTick; //For inventory background fading
+	/*======================================*/
+
+	olc::Sprite* backBuff; //Save state of current frame for background of transparent inventory screen
 
 	//Sprite Resources
 	olc::Sprite* spriteFloor = nullptr;

@@ -101,13 +101,6 @@ bool Platformer::OnUserCreate()
 	//HACKKKK
 	m_pPlayer->nHealth = 5;
 
-	for (int i = 0; i < 10; i++)
-	{
-		vecInvSelectX.push_back(0);
-		vecInvSelectY.push_back(0);
-		vecInvAlphas.push_back(255);
-	}
-
 	return true;
 }
 
@@ -202,6 +195,10 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 			if (GetKey(olc::Key::A).bReleased) //Access Inventory
 			{
 				inventoryColor.a = 0; //Reset alpha to do fading
+				nInvSelectX = 0;
+				nInvSelectY = 0;
+				vecInvSelect.clear();
+				vecInvSelect.push_back(new InvSelect(nInvSelectX, nInvSelectY, 255));
 				nGameMode = MODE_INVENTORY;
 			}
 
@@ -741,45 +738,45 @@ bool Platformer::HasItem(cItem* item)
 
 bool Platformer::UpdateInventory(float fElapsedTime)
 {
-	//Have inventory color somehow related to the map's sky color so that it will look uniform depending on the sky?
-
-	fStateTick += fElapsedTime;
-	if (fStateTick >= 0.02f)
+	fInvStateTick += fElapsedTime;
+	if (fInvStateTick >= 0.02f) //Draw things that use fading
 	{
 		if (inventoryColor.a + 35 < 255)
 			inventoryColor.a += 35;
+		else
+			inventoryColor.a = 255;
 
-		fStateTick -= 0.02f;
-
-	// Drawing background and fade overlay NOT every frame because improves fps, and for an inventory you don't even notice
+		// ===== Drawing background and fade overlay NOT every frame because improves fps, and for an inventory you don't even notice =====
 		//Draw Background
 		DrawSprite(0, 0, backBuff);
 
-		//Draw Fading Background overlay
+		//Draw Fade-in Background overlay
 		SetPixelMode(olc::Pixel::ALPHA);
 		SetPixelBlend(0.7f);
 		FillRect(0, 0, ScreenWidth(), ScreenHeight(), inventoryColor);
 		SetPixelBlend(1.0f);
 		SetPixelMode(olc::Pixel::MASK);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		for (int i = 0; i < vecInvAlphas.size(); i++)
+		//==================================================================================================================================
+
+		//Draw selection rectangle (Fade)
+		for (int i = 0; i < vecInvSelect.size(); i++)
 		{
-			if (vecInvSelectX[i] != nInvSelectX || vecInvSelectY[i] != nInvSelectY)
+			if (vecInvSelect[i]->x != nInvSelectX || vecInvSelect[i]->y != nInvSelectY)
 			{
 				//Fade
-				if (vecInvAlphas[i] - 15 > 0)
-					vecInvAlphas[i] -= 15;
+				if (vecInvSelect[i]->alpha - 15 > 0)
+					vecInvSelect[i]->alpha -= 15;
 				else
-					vecInvAlphas[i] = 0;
+					vecInvSelect[i]->alpha = 0;
 			}
-		}
-		for (int i = 0; i < vecInvAlphas.size(); i++)
-		{
-			rectColor.a = vecInvAlphas[i];
+		
+			rectColor.a = vecInvSelect[i]->alpha;
 			SetPixelMode(olc::Pixel::ALPHA);
-			DrawRect(6 + vecInvSelectX[i] * 25, 24 + vecInvSelectY[i] * 25, 25, 25, rectColor);
+			DrawRect(6 + vecInvSelect[i]->x * 25, 24 + vecInvSelect[i]->y * 25, 25, 25, rectColor);
 			SetPixelMode(olc::Pixel::MASK);
 		}
+
+		fInvStateTick -= 0.02f;
 	}
 
 	DrawString(4, 4, "INVENTORY", olc::WHITE, 2);
@@ -802,55 +799,27 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 			highlighted = item;
 	}
 
-	//Draw selection rectangle  ---  MAKE THIS FADE TOO
-	
-	/*rectColor.a = 20;*/
-	/*for (int i = 0; i < 10; i++)
+	if (GetKey(olc::LEFT).bPressed || GetKey(olc::RIGHT).bPressed || GetKey(olc::UP).bPressed || GetKey(olc::DOWN).bPressed)
 	{
-		rectColor.a = 2;
-		SetPixelMode(olc::Pixel::ALPHA);
-		DrawRect(6 + vecInvSelectX[i] * 25, 24 + vecInvSelectY[i] * 25, 25, 25, rectColor);
-		SetPixelMode(olc::Pixel::MASK);
-	}*/
-	//DrawRect(6 + nInvSelectX * 25, 24 + nInvSelectY * 25, 25, 25);
+		if (GetKey(olc::LEFT).bPressed) nInvSelectX--;
+		if (GetKey(olc::RIGHT).bPressed) nInvSelectX++;
+		if (GetKey(olc::UP).bPressed) nInvSelectY--;
+		if (GetKey(olc::DOWN).bPressed) nInvSelectY++;
 
-
-	if (GetKey(olc::LEFT).bPressed)
-	{
-		nInvSelectX--;
 		if (nInvSelectX < 0) nInvSelectX = 3;
-		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
-		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
-		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
-	}
-	if (GetKey(olc::RIGHT).bPressed) 
-	{
-		nInvSelectX++;
 		if (nInvSelectX >= 4) nInvSelectX = 0;
-		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
-		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
-		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
-	}
-	if (GetKey(olc::UP).bPressed) 
-	{
-		nInvSelectY--;
 		if (nInvSelectY < 0) nInvSelectY = 3;
-		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
-		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
-		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
-	}
-	if (GetKey(olc::DOWN).bPressed) 
-	{
-		nInvSelectY++;
 		if (nInvSelectY >= 4) nInvSelectY = 0;
-		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
-		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
-		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
+
+
+		vecInvSelect.insert(vecInvSelect.begin(), new InvSelect(nInvSelectX, nInvSelectY, 255));
 	}
-	
-	
-	
-	
+
+	//Remove the selector rects that have faded away
+	auto v = remove_if(vecInvSelect.begin(), vecInvSelect.end(), [](const InvSelect* element) {return element->alpha == 0; });
+	if (v != vecInvSelect.end())
+		vecInvSelect.erase(v);
+
 
 	if (GetKey(olc::A).bReleased)
 	{
