@@ -11,6 +11,7 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <vector>
 using namespace std;
 
 #include "Assets.h"
@@ -57,9 +58,13 @@ private:
 
 	int nInvSelectX = 0;
 	int nInvSelectY = 0;
+	vector<int> vecInvSelectX;
+	vector<int> vecInvSelectY;
+	vector<uint8_t> vecInvAlphas;
 	float fStateTick; //For inventory background fading
 	olc::Sprite* backBuff; //Save state of current frame for background of transparent inventory screen
 	olc::Pixel inventoryColor;
+	olc::Pixel rectColor;
 
 
 	//Sprite Resources

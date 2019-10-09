@@ -46,6 +46,7 @@ bool Platformer::OnUserCreate()
 
 	//Inventory background color
 	inventoryColor = olc::BLACK;
+	rectColor = olc::WHITE;
 
 	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
@@ -99,9 +100,13 @@ bool Platformer::OnUserCreate()
 
 	//HACKKKK
 	m_pPlayer->nHealth = 5;
-	
-	
 
+	for (int i = 0; i < 10; i++)
+	{
+		vecInvSelectX.push_back(0);
+		vecInvSelectY.push_back(0);
+		vecInvAlphas.push_back(255);
+	}
 
 	return true;
 }
@@ -746,7 +751,7 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 
 		fStateTick -= 0.02f;
 
-
+	// Drawing background and fade overlay NOT every frame because improves fps, and for an inventory you don't even notice
 		//Draw Background
 		DrawSprite(0, 0, backBuff);
 
@@ -756,6 +761,25 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 		FillRect(0, 0, ScreenWidth(), ScreenHeight(), inventoryColor);
 		SetPixelBlend(1.0f);
 		SetPixelMode(olc::Pixel::MASK);
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		for (int i = 0; i < vecInvAlphas.size(); i++)
+		{
+			if (vecInvSelectX[i] != nInvSelectX || vecInvSelectY[i] != nInvSelectY)
+			{
+				//Fade
+				if (vecInvAlphas[i] - 15 > 0)
+					vecInvAlphas[i] -= 15;
+				else
+					vecInvAlphas[i] = 0;
+			}
+		}
+		for (int i = 0; i < vecInvAlphas.size(); i++)
+		{
+			rectColor.a = vecInvAlphas[i];
+			SetPixelMode(olc::Pixel::ALPHA);
+			DrawRect(6 + vecInvSelectX[i] * 25, 24 + vecInvSelectY[i] * 25, 25, 25, rectColor);
+			SetPixelMode(olc::Pixel::MASK);
+		}
 	}
 
 	DrawString(4, 4, "INVENTORY", olc::WHITE, 2);
@@ -779,16 +803,54 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 	}
 
 	//Draw selection rectangle  ---  MAKE THIS FADE TOO
-	DrawRect(6 + nInvSelectX * 25, 24 + nInvSelectY * 25, 25, 25);
+	
+	/*rectColor.a = 20;*/
+	/*for (int i = 0; i < 10; i++)
+	{
+		rectColor.a = 2;
+		SetPixelMode(olc::Pixel::ALPHA);
+		DrawRect(6 + vecInvSelectX[i] * 25, 24 + vecInvSelectY[i] * 25, 25, 25, rectColor);
+		SetPixelMode(olc::Pixel::MASK);
+	}*/
+	//DrawRect(6 + nInvSelectX * 25, 24 + nInvSelectY * 25, 25, 25);
 
-	if (GetKey(olc::LEFT).bPressed) nInvSelectX--;
-	if (GetKey(olc::RIGHT).bPressed) nInvSelectX++;
-	if (GetKey(olc::UP).bPressed) nInvSelectY--;
-	if (GetKey(olc::DOWN).bPressed) nInvSelectY++;
-	if (nInvSelectX < 0) nInvSelectX = 3;
-	if (nInvSelectX >= 4) nInvSelectX = 0;
-	if (nInvSelectY < 0) nInvSelectY = 3;
-	if (nInvSelectY >= 4) nInvSelectY = 0;
+
+	if (GetKey(olc::LEFT).bPressed)
+	{
+		nInvSelectX--;
+		if (nInvSelectX < 0) nInvSelectX = 3;
+		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
+		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
+		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
+	}
+	if (GetKey(olc::RIGHT).bPressed) 
+	{
+		nInvSelectX++;
+		if (nInvSelectX >= 4) nInvSelectX = 0;
+		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
+		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
+		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
+	}
+	if (GetKey(olc::UP).bPressed) 
+	{
+		nInvSelectY--;
+		if (nInvSelectY < 0) nInvSelectY = 3;
+		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
+		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
+		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
+	}
+	if (GetKey(olc::DOWN).bPressed) 
+	{
+		nInvSelectY++;
+		if (nInvSelectY >= 4) nInvSelectY = 0;
+		vecInvSelectX.insert(vecInvSelectX.begin(), nInvSelectX);
+		vecInvSelectY.insert(vecInvSelectY.begin(), nInvSelectY);
+		vecInvAlphas.insert(vecInvAlphas.begin(), 255);
+	}
+	
+	
+	
+	
 
 	if (GetKey(olc::A).bReleased)
 	{
