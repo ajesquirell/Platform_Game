@@ -95,7 +95,6 @@ private:
 
 	//Pickup variables
 	//bool bPickupCollected = false;
-	int nPlayerScore = 0;
 	string sScoreString;
 
 	//Sound

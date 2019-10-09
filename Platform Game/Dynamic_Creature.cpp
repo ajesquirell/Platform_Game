@@ -55,7 +55,7 @@ void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
 			if (fabs(vx) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably shouldn't have this here but I think it's funny
 				animations.ChangeState("run");
 		}
-		else if (fFaceDir == +1.0f && vx < 0 || fFaceDir == -1.0f && vx > 0) //Just changed direction but still moving the opposite way -> braking
+		else if (fFaceDir == RIGHT && vx < 0 || fFaceDir == LEFT && vx > 0) //Just changed direction but still moving the opposite way -> braking
 		{
 			animations.ChangeState("brake");
 		}
@@ -79,8 +79,9 @@ void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
 		}
 	}
 
-	// Update facing direction (Except for player - this is handled explicitly in the game engine using user input)
-	if (sName != "Jerry")
+	// Update facing direction when under control of script processor. Otherwise handled by input (player) or in creature's behavior
+	//if (sName != "Jerry")
+	if (!g_script->bPlayerControlEnabled)
 		fFaceDir = (vx < 0 ? -1.0f : vx > 0 ? 1.0f : fFaceDir);
 
 

@@ -61,7 +61,7 @@
 //
 //	//Pickup variables
 //	//bool bPickupCollected = false;
-//	int nPlayerScore = 0;
+//	int nScore = 0;
 //	string sScoreString;
 //
 //	//Sound
@@ -85,7 +85,7 @@
 //		switch (c)			//Oh and this will be the logic to check for pickups, if it's not meant to be picked up and not implemented here, nothing will happen
 //		{					//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
 //		case (COIN):
-//			nPlayerScore += 10;
+//			nScore += 10;
 //			olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
 //			success = true;
 //			break;
@@ -527,7 +527,7 @@
 //			DisplayDialog(vecDialogToShow, 20, 20);
 //
 //		//Draw Score
-//		sScoreString = "Flames Cash: " + to_string(nPlayerScore);
+//		sScoreString = "Flames Cash: " + to_string(nScore);
 //		DrawString(0, 0, sScoreString, olc::RED);
 //
 //		/*
@@ -553,9 +553,9 @@
 //		DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P", olc::DARK_BLUE);
 //
 //		//Game end (for now of course)
-//		if (nPlayerScore >= 370)
+//		if (nScore >= 370)
 //		{
-//			nPlayerScore = 0;
+//			nScore = 0;
 //
 //			//LoadLevel(2);
 //		}

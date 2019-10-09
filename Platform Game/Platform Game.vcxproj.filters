@@ -60,6 +60,9 @@
     <ClCompile Include="Dynamic_Item.cpp">
       <Filter>Source Files\Dynamics</Filter>
     </ClCompile>
+    <ClCompile Include="Dynamic_Creature_Jerry.cpp">
+      <Filter>Source Files\Dynamics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine.h">

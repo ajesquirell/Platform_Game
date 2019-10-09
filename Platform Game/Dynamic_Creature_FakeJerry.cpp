@@ -6,9 +6,6 @@ cDynamic_Creature_FakeJerry::cDynamic_Creature_FakeJerry() : cDynamic_Creature("
 	nHealth = 10;
 	nHealthMax = 10;
 	fStateTick = 2.0f;
-
-	fDirectionX = 0.0f;
-	fDirectionY = 0.0f;
 }
 
 void cDynamic_Creature_FakeJerry::Behavior(float fElapsedTime, cDynamic* player)
@@ -25,12 +22,12 @@ void cDynamic_Creature_FakeJerry::Behavior(float fElapsedTime, cDynamic* player)
 	fStateTick -= fElapsedTime;
 	if (fStateTick <= 0.0f)
 	{
-		if (fDistance < 8.0f && fDistance != 0) // Avoid divide by 0 error that freezes program
+		if (fDistance < 8.0f && fDistance != 0) // Avoid divide by 0 error that freezes program (when we had vx = (fTargetX / fDistance) * 2.0f;)
 		{
 			if (fTargetX < 0.0f)
-				fDirectionX = -1.0f;
+				fFaceDir = LEFT; // -1.0f
 			else
-				fDirectionX = 1.0f;
+				fFaceDir = RIGHT; // 1.0f
 		}
 		else
 		{
@@ -43,5 +40,6 @@ void cDynamic_Creature_FakeJerry::Behavior(float fElapsedTime, cDynamic* player)
 
 		fStateTick += 0.8f;
 	}
-	vx += fDirectionX * 5.0f * fElapsedTime;
+	//vx += fFaceDir * 5.0f * fElapsedTime;
+	vx += fFaceDir * (bObjectOnGround && vx >= 0 ? 10.0f : bObjectOnGround ? 5.0f : 8.0f)* fElapsedTime;
 }

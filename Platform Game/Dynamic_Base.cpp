@@ -2,6 +2,7 @@
 using namespace std;
 
 Platformer* cDynamic::g_engine = nullptr;
+cScriptProcessor* cDynamic::g_script = nullptr;
 
 cDynamic::cDynamic(string n)
 {

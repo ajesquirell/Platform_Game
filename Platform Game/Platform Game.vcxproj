@@ -24,6 +24,7 @@
     <ClCompile Include="Dynamic_Base.cpp" />
     <ClCompile Include="Dynamic_Creature.cpp" />
     <ClCompile Include="Dynamic_Creature_FakeJerry.cpp" />
+    <ClCompile Include="Dynamic_Creature_Jerry.cpp" />
     <ClCompile Include="Dynamic_Item.cpp" />
     <ClCompile Include="Dynamic_Teleport.cpp" />
     <ClCompile Include="Items.cpp" />

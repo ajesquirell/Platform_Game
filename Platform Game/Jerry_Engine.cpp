@@ -14,7 +14,7 @@ bool Platformer::HandlePickup(wchar_t c) //Function for handling the different p
 	switch (c)			//Oh and this will be the logic to check for pickups, if it's not meant to be picked up and not implemented here, nothing will happen
 	{					//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
 	case (COIN):
-		nPlayerScore += 10;
+		m_pPlayer->nScore += 10;
 		olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
 		success = true;
 		break;
@@ -40,6 +40,7 @@ bool Platformer::OnUserCreate()
 
 	cMap::g_script = &m_script;
 	cQuest::g_script = &m_script;
+	cDynamic::g_script = &m_script;
 
 	//Initialize "back buffer" - really just for inventory background
 	backBuff = new olc::Sprite(ScreenWidth(), ScreenHeight());
@@ -93,13 +94,10 @@ bool Platformer::OnUserCreate()
 	listQuests.push_front(new cQuest_MainQuest());
 
 	//Player init
-	m_pPlayer = new cDynamic_Creature("Jerry"); //For now sprites/ anims are hard coded to be Jerry
+	m_pPlayer = new cDynamic_Creature_Jerry(); //For now sprites/ anims are hard coded to be Jerry
 
 	//Initial Map
 	ChangeMap("Level 1", 0, 0);
-
-	//HACKKKK
-	m_pPlayer->nHealth = 5;
 
 	return true;
 }
@@ -221,12 +219,12 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 
 			if (GetKey(olc::Key::Z).bPressed) //TEST/DEBUG
 			{
-				//CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
+				CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
 				//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
 				//CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
 				//CMD(ShowDialog({ "Oh silly Jerry" }));
 				//CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
-				//CMD(MoveTo(m_pPlayer, 7, 9, 2.5f));
+				CMD(MoveTo(m_pPlayer, 7, 9, 1.0f));
 				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
 			}
 
@@ -282,8 +280,8 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	}
 	else // Script processor has control 
 	{
-		// Simply adjust facing direction here.Other objects will do this in behavior
-		m_pPlayer->fFaceDir = (m_pPlayer->vx < 0 ? -1.0f : m_pPlayer->vx > 0 ? 1.0f : m_pPlayer->fFaceDir);
+		// Simply adjust facing direction here.Other objects will do this in behavior --HANDLED IN CREATURE CLASS NOW FOR ALL CREATURES UNDER CONTROL OF SCRIPT
+		//m_pPlayer->fFaceDir = (m_pPlayer->vx < 0 ? -1.0f : m_pPlayer->vx > 0 ? 1.0f : m_pPlayer->fFaceDir);
 
 		if (bShowDialog)
 		{
@@ -607,7 +605,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	DrawSprite(0, 0, backBuff);
 
 	// Draw Score
-	sScoreString = "Flames Cash: " + to_string(nPlayerScore);
+	sScoreString = "Flames Cash: " + to_string(m_pPlayer->nScore);
 	DrawString(0, 0, sScoreString, olc::RED);
 
 	// Draw Health
@@ -642,9 +640,9 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P, Interact: F", olc::DARK_BLUE);
 
 	//Game end (for now of course)
-	if (nPlayerScore >= 370)
+	if (nScore >= 370)
 	{
-		nPlayerScore = 0;
+		nScore = 0;
 
 		//LoadLevel(2);
 	}

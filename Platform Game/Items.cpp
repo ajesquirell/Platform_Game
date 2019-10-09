@@ -73,3 +73,37 @@ bool cItem_HealthBoost::OnUse(cDynamic* object)
 
 	return true; // Remove from inventory
 }
+
+//================================================================================================
+//											Flames Cash - Increase score by 10
+//================================================================================================
+cItem_FlamesCash::cItem_FlamesCash() :
+	cItem("Flames Cash", "Increases Score by 10")
+{
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_00"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_01"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_02"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_03"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_04"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_05"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_06"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_07"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_08"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_09"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_10"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_11"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_12"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_13"));
+	animItem.ChangeState("default");
+}
+
+bool cItem_FlamesCash::OnInteract(cDynamic* object)
+{
+	
+	return false;
+}
+
+bool cItem_FlamesCash::OnUse(cDynamic* object)
+{
+	return false;
+}

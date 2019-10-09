@@ -39,3 +39,14 @@ public:
 	bool OnInteract(cDynamic* object) override;
 	bool OnUse(cDynamic* object) override;
 };
+
+//================================================================================================
+//											Flames Cash - Increase score by 10
+//================================================================================================
+class cItem_FlamesCash : public cItem
+{
+public:
+	cItem_FlamesCash();
+	bool OnInteract(cDynamic* object) override;
+	bool OnUse(cDynamic* object) override;
+};

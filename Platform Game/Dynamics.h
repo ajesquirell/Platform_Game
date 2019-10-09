@@ -4,6 +4,7 @@
 #include "Animator.h"
 
 class Platformer;
+class cScriptProcessor;
 class cItem;
 
 //================================================================================================
@@ -31,6 +32,7 @@ public:
 	virtual void OnInteract(cDynamic* player = nullptr) {}
 
 	static Platformer* g_engine;
+	static cScriptProcessor* g_script;
 };
 
 //================================================================================================
@@ -41,7 +43,7 @@ class cDynamic_Creature : public cDynamic
 public:
 	cDynamic_Creature(std::string n);
 
-	enum FacingDirection{LEFT, RIGHT};
+	enum FacingDirection{LEFT = -1, RIGHT = 1};
 
 public:
 	int nHealth;
@@ -62,6 +64,18 @@ protected:
 };
 
 //================================================================================================
+//											Dynamic Creature - Jerry (Player)
+//================================================================================================
+class cDynamic_Creature_Jerry : public cDynamic_Creature
+{
+public:
+	cDynamic_Creature_Jerry();
+
+public:
+	int nScore;
+};
+
+//================================================================================================
 //											Dynamic Creature - Fake Jerry
 //================================================================================================
 class cDynamic_Creature_FakeJerry : public cDynamic_Creature
@@ -70,8 +84,8 @@ public:
 	cDynamic_Creature_FakeJerry();
 	void Behavior(float fElapsedTime, cDynamic* player = nullptr) override;
 private:
-	float fDirectionX;
-	float fDirectionY;
+	//float fDirectionX;
+	//float fDirectionY;
 };
 
 //================================================================================================
