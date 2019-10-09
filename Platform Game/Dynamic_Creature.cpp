@@ -69,7 +69,7 @@ void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
 	}
 	else
 	{
-		if (vy < 0)
+		if (vy <= 0)
 		{
 			animations.ChangeState("jump", true);
 		}
