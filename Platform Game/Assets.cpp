@@ -99,4 +99,5 @@ void Assets::LoadItems()
 
 	load(new cItem_Health);
 	load(new cItem_HealthBoost);
+	load(new cItem_FlamesCash);
 }

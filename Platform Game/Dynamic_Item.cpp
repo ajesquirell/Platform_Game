@@ -32,6 +32,11 @@ void cDynamic_Item::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy)
 	item->animItem.DrawSelf(pge, t);
 }
 
+void cDynamic_Item::Update(float fElapsedTime, cDynamic* player)
+{
+	item->animItem.Update(fElapsedTime);
+}
+
 void cDynamic_Item::OnInteract(cDynamic* player)
 {
 	if (bCollected)

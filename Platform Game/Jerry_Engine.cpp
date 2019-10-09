@@ -482,7 +482,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 
 
 		//Update dynamic objects
-		object->Update(fElapsedTime, m_pPlayer );
+		object->Update(fElapsedTime, m_pPlayer);
 
 		// Remove quests that have been completed
 		auto i = remove_if(listQuests.begin(), listQuests.end(), [](const cQuest* d) {return d->bCompleted; });
@@ -640,9 +640,9 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P, Interact: F", olc::DARK_BLUE);
 
 	//Game end (for now of course)
-	if (nScore >= 370)
+	if (m_pPlayer->nScore >= 370)
 	{
-		nScore = 0;
+		m_pPlayer->nScore = 0;
 
 		//LoadLevel(2);
 	}
@@ -860,6 +860,10 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 
 	DrawString(128, 44, "HEALTH:" + to_string(m_pPlayer->nHealth));
 	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
+
+	//Update dynamic objects in case items have animation
+	for (auto dyn : vecDynamics)
+		dyn->Update(fElapsedTime, m_pPlayer); // This WILL continue to update animations in game, but for what we have now you don't notice. We could always just save current frame and return to it
 
 	return true;
 }

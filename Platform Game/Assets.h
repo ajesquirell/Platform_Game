@@ -8,6 +8,10 @@
 #include "Items.h"
 //class cMap; //Because we can't include Maps.h - Maps.h includes Tiles.h which includes this header.
 
+/*+++++++++++++++
+	Should really figure out how to throw exceptions instead of just outputing an error when things aren't loaded right here
++++++++++++++++*/
+
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
 {
 public:

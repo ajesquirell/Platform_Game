@@ -7,6 +7,7 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 	nHealthMax = 10;
 	fFaceDir = +1.0f;
 	bSquat = false;
+	fStateTick = 2.0f;
 
 	animations.mapStates["idle"].push_back(Assets::get().GetSprite("Jerry_Idle"));
 

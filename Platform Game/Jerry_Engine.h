@@ -32,7 +32,7 @@ private:
 	cMap* pCurrentMap = nullptr;
 
 	//Player Properties
-	cDynamic_Creature* m_pPlayer = nullptr;
+	cDynamic_Creature_Jerry* m_pPlayer = nullptr;
 
 	vector<cDynamic*> vecDynamics;
 

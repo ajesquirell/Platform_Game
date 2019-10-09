@@ -99,11 +99,12 @@ cItem_FlamesCash::cItem_FlamesCash() :
 
 bool cItem_FlamesCash::OnInteract(cDynamic* object)
 {
-	
+	OnUse(object);
 	return false;
 }
 
 bool cItem_FlamesCash::OnUse(cDynamic* object)
 {
-	return false;
+	((cDynamic_Creature_Jerry*)object)->nScore += 10;
+	return true;
 }

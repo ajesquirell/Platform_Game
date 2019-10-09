@@ -97,6 +97,7 @@ public:
 	cDynamic_Teleport(float x, float y, std::string sMapName, float tx, float ty);
 	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override;
 	void Update(float fElapsedTime, cDynamic* player = nullptr) override;
+	//Should have OnInteract here instead of in map?
 
 public:
 	std::string sMapName;
@@ -111,6 +112,7 @@ class cDynamic_Item : public cDynamic
 {
 public:
 	cDynamic_Item(float x, float y, cItem* item);
+	void Update(float fElapsedTime, cDynamic* player = nullptr) override;
 	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override;
 	void OnInteract(cDynamic* player = nullptr) override;
 
