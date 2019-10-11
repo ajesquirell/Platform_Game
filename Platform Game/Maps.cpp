@@ -148,6 +148,14 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 
 	//Add flames cash (FOR NOW - will implement adding these into the load map function so we can chagne these from editing level)
 	vecDyns.push_back(new cDynamic_Item(3, 9, Assets::get().GetItem("Flames Cash")));
+	/*vecDyns.push_back(new cDynamic_Item(4, 9, Assets::get().GetItem("Flames Cash")));
+	vecDyns.push_back(new cDynamic_Item(5, 9, Assets::get().GetItem("Flames Cash")));
+	vecDyns.push_back(new cDynamic_Item(6, 9, Assets::get().GetItem("Flames Cash")));
+	vecDyns.push_back(new cDynamic_Item(7, 9, Assets::get().GetItem("Flames Cash")));
+	vecDyns.push_back(new cDynamic_Item(8, 9, Assets::get().GetItem("Flames Cash")));
+	vecDyns.push_back(new cDynamic_Item(9, 9, Assets::get().GetItem("Flames Cash")));*/
+
+
 
 
 	for (int i = 0; i < 3; i++)
