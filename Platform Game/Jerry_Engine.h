@@ -97,14 +97,6 @@ private:
 	//bool bPickupCollected = false;
 	string sScoreString;
 
-	//Sound
-	int sndSampleA;
-	int sndSampleB;
-	int sndSampleC;
-	int sndBoo;
-	int sndWuWuWu;
-	int sndGetMoney;
-
 	bool bGamePaused = false;
 
 	//Debug + Testing

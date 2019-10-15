@@ -15,13 +15,13 @@ bool Platformer::HandlePickup(wchar_t c) //Function for handling the different p
 	{					//That way we don't need to have a long if statement in OnUserUpdate() cluttered with every possible pickup we add to the game
 	case (COIN):
 		m_pPlayer->nScore += 10;
-		olc::SOUND::PlaySample(sndSampleB); // Plays Sample B
+		olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleB")); // Plays Sample B
 		success = true;
 		break;
 
 	case (TEST):
 		//skyColor = olc::DARK_YELLOW;
-		olc::SOUND::PlaySample(sndWuWuWu);
+		olc::SOUND::PlaySample(Assets::get().GetSound("sndWuWuWu"));
 		success = true;
 		break;
 	}
@@ -53,6 +53,7 @@ bool Platformer::OnUserCreate()
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
 	Assets::get().LoadItems();
 	Assets::get().LoadMaps();
+	Assets::get().LoadSounds();
 
 	//Animated
 
@@ -81,14 +82,9 @@ bool Platformer::OnUserCreate()
 	//Sound
 	olc::SOUND::InitialiseAudio(44100, 1, 8, 512);
 
-	sndSampleA = olc::SOUND::LoadAudioSample("../Sounds/SampleA.wav");
-	sndSampleB = olc::SOUND::LoadAudioSample("../Sounds/SampleB.wav");
-	sndSampleC = olc::SOUND::LoadAudioSample("../Sounds/SampleC.wav");
-	sndBoo = olc::SOUND::LoadAudioSample("../Sounds/Boo.wav");
-	sndWuWuWu = olc::SOUND::LoadAudioSample("../Sounds/WuWuWu.wav");
-	sndGetMoney = olc::SOUND::LoadAudioSample("../Sounds/GetMoney.wav");
+	
 
-	olc::SOUND::PlaySample(sndSampleC, true); // Plays Sample C loop
+	olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleC"), true); // Plays Sample C loop
 
 	//Add First Quest
 	listQuests.push_front(new cQuest_MainQuest());
@@ -115,12 +111,12 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	{
 		if (!bGamePaused) {
 			bGamePaused = true; /*Pause*/
-			olc::SOUND::StopSample(sndSampleC);
-			olc::SOUND::PlaySample(sndGetMoney);
+			olc::SOUND::StopSample(Assets::get().GetSound("sndSampleC"));
+			olc::SOUND::PlaySample(Assets::get().GetSound("sndGetMoney"));
 		}
 		else {
 			bGamePaused = false; /*Unpause*/
-			olc::SOUND::PlaySample(sndSampleC, true);
+			olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleC"), true);
 		}
 	}
 	if (bGamePaused)
@@ -206,7 +202,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				{
 					m_pPlayer->vy = -12.0f;
 					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
-					olc::SOUND::PlaySample(sndBoo);
+					olc::SOUND::PlaySample(Assets::get().GetSound("sndBoo"));
 				}
 			}
 			if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed

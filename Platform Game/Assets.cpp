@@ -101,3 +101,19 @@ void Assets::LoadItems()
 	load(new cItem_HealthBoost, 2);
 	load(new cItem_FlamesCash, 3);
 }
+
+void Assets::LoadSounds()
+{
+	auto load = [&](string name, string filename)
+	{
+		mapSounds[name] = olc::SOUND::LoadAudioSample(filename);
+	};
+
+	load("sndSampleA","../Sounds/SampleA.wav");
+	load("sndSampleB","../Sounds/SampleB.wav");
+	load("sndSampleC","../Sounds/SampleC.wav");
+	load("sndBoo","../Sounds/Boo.wav");
+	load("sndWuWuWu","../Sounds/WuWuWu.wav");
+	load("sndGetMoney","../Sounds/GetMoney.wav");
+}
+

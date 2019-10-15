@@ -4,6 +4,7 @@
 #include <map>
 
 #include "olcPixelGameEngine.h"
+#include "olcPGEX_Sound.h"
 #include "Maps.h"
 #include "Items.h"
 //class cMap; //Because we can't include Maps.h - Maps.h includes Tiles.h which includes this header.
@@ -63,9 +64,18 @@ public:
 		}
 	}
 
+	int GetSound(std::string name)
+	{
+		if (mapSounds[name] == 0)
+			std::cerr << "\nError: Could not retrieve sound with the name \"" << name << "\". Please ensure it exists on disk and is loaded from Assets class.\n";
+
+		return mapSounds[name];
+	}
+
 	void LoadSprites();
 	void LoadMaps();
 	void LoadItems();
+	void LoadSounds();
 
 private:
 	Assets();
@@ -74,5 +84,6 @@ private:
 	std::map<std::string, olc::Sprite*> mapSprites;
 	std::map<std::string, cMap*> mapMaps;
 	std::map<std::string, int> mapItems;
+	std::map<std::string, int> mapSounds;
 };
 

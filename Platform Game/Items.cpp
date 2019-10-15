@@ -1,5 +1,6 @@
 #include "Items.h"
 #include "Assets.h"
+#include "olcPGEX_Sound.h"
 #include <algorithm>
 
 using namespace std;
@@ -122,5 +123,6 @@ bool cItem_FlamesCash::OnInteract(cDynamic* object)
 bool cItem_FlamesCash::OnUse(cDynamic* object)
 {
 	((cDynamic_Creature_Jerry*)object)->nScore += 10;
+	olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleB")); // Plays Sample B
 	return true;
 }
