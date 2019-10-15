@@ -609,6 +609,8 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	DrawString(1, 11, "HP: ", olc::DARK_BLUE);
 	for (int x = 0; x < m_pPlayer->nHealth; x++)
 		FillRect(25 + (x * 6), 10, 5, 8, olc::DARK_BLUE);
+	for (int x = 0; x < m_pPlayer->nHealthMax; x++)
+		DrawRect(25 + (x * 6), 10, 4, 7, olc::DARK_BLUE);
 
 	// Draw any dialog being displayed
 	if (bShowDialog)
