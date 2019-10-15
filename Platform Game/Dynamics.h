@@ -22,6 +22,7 @@ public:
 	bool bSolidVsMap;
 	bool bSolidVsDynamic;
 	bool bFriendly;
+	bool bGravityApplies = true;
 	std::string sName;
 
 	bool bObjectOnGround; //Probably only for Dynamic Creatures and Items
@@ -111,7 +112,7 @@ public:
 class cDynamic_Item : public cDynamic
 {
 public:
-	cDynamic_Item(float x, float y, cItem* item);
+	cDynamic_Item(float x, float y, cItem* i);
 	void Update(float fElapsedTime, cDynamic* player = nullptr) override;
 	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override;
 	void OnInteract(cDynamic* player = nullptr) override;

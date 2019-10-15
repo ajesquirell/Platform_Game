@@ -15,6 +15,7 @@ cDynamic_Item::cDynamic_Item(float x, float y, cItem* i) : cDynamic("pickup")
 	bSolidVsMap = true;
 	bFriendly = true;
 	bCollected = false;
+	bGravityApplies = i->bGravityApplies;
 }
 
 void cDynamic_Item::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy)
@@ -29,12 +30,12 @@ void cDynamic_Item::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy)
 
 	t.Translate((px - ox) * 22 + 22 / 2, (py - oy) * 22 + 22 / 2); //If we want to change resolution later, need to make a global constant instead of 22
 
-	item->animItem.DrawSelf(pge, t);
+	item->DrawSelf(pge, t);
 }
 
 void cDynamic_Item::Update(float fElapsedTime, cDynamic* player)
 {
-	item->animItem.Update(fElapsedTime);
+	item->Update(fElapsedTime);
 }
 
 void cDynamic_Item::OnInteract(cDynamic* player)

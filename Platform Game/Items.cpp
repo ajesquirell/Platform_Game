@@ -20,6 +20,18 @@ bool cItem::OnUse(cDynamic* object)
 	return false;
 }
 
+void cItem::DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D t)
+{
+	//In case we want to add any functionality here
+	animItem.DrawSelf(pge, t);
+}
+
+void cItem::Update(float fElapsedTime)
+{
+	//In case we want to add any functionality here
+	animItem.Update(fElapsedTime);
+}
+
 //================================================================================================
 //											Health - Give player 10 hp
 //================================================================================================
@@ -28,6 +40,7 @@ cItem_Health::cItem_Health() :
 {
 	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_09"));
 	animItem.ChangeState("default");
+	bGravityApplies = true;
 }
 
 bool cItem_Health::OnInteract(cDynamic* object)
@@ -55,6 +68,7 @@ cItem_HealthBoost::cItem_HealthBoost() :
 {
 	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
 	animItem.ChangeState("default");
+	bGravityApplies = true;
 }
 
 bool cItem_HealthBoost::OnInteract(cDynamic* object)
@@ -95,6 +109,8 @@ cItem_FlamesCash::cItem_FlamesCash() :
 	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_12"));
 	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_13"));
 	animItem.ChangeState("default");
+
+	bGravityApplies = false;
 }
 
 bool cItem_FlamesCash::OnInteract(cDynamic* object)

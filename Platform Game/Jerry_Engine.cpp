@@ -51,8 +51,8 @@ bool Platformer::OnUserCreate()
 
 	//Load Assets (Sprites, Maps)
 	Assets::get().LoadSprites(); //Can get away with loading everything at once because this is a small game
-	Assets::get().LoadMaps();
 	Assets::get().LoadItems();
+	Assets::get().LoadMaps();
 
 	//Animated
 
@@ -298,7 +298,8 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	//Loop through dynamic objects (creatures?)
 	for (auto& object : vecDynamics)
 	{
-		object->vy += 20.0f * fElapsedTime; //Gravity
+		if (object->bGravityApplies)
+			object->vy += 20.0f * fElapsedTime; //Gravity
 
 		if (object->bObjectOnGround)
 		{
@@ -382,20 +383,17 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 					/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
 					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
 					{
-						pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch();
-						//pCurrentMap->SetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f, new cTile_Sky); //Only break one block at a time
+						pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch(); //Only break one block at a time
 					}
 
 					else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
 					{
 						pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
-						//pCurrentMap->SetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 					}
 
 					else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
 					{
 						pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
-						//pCurrentMap->SetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f, new cTile_Sky);
 					}
 
 					/***********************************************************************************/
@@ -595,9 +593,12 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 		}
 	}
 
+
+	
+
 	// Draw Object
 	for (auto& object : vecDynamics)
-		object->DrawSelf(this, fOffsetX, fOffsetY);
+			object->DrawSelf(this, fOffsetX, fOffsetY);
 
 	m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
 
@@ -791,10 +792,14 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 
 		olc::GFX2D::Transform2D t;
 		t.Translate(8 + x * 25, 26 + y * 25);
-		item->animItem.DrawSelf(this, t);
+		item->DrawSelf(this, t);
 
 		if (nInvSelectX == x && nInvSelectY == y)
 			highlighted = item;
+
+		//Update dynamic objects in case items have animation
+		item->Update(fElapsedTime); // (Not anymore)This WILL continue to update animations in game, but for what we have now you don't notice. We could always just save current frame and return to it
+
 	}
 
 	if (GetKey(olc::LEFT).bPressed || GetKey(olc::RIGHT).bPressed || GetKey(olc::UP).bPressed || GetKey(olc::DOWN).bPressed)
@@ -860,10 +865,6 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 
 	DrawString(128, 44, "HEALTH:" + to_string(m_pPlayer->nHealth));
 	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
-
-	//Update dynamic objects in case items have animation
-	for (auto dyn : vecDynamics)
-		dyn->Update(fElapsedTime, m_pPlayer); // This WILL continue to update animations in game, but for what we have now you don't notice. We could always just save current frame and return to it
 
 	return true;
 }

@@ -88,10 +88,11 @@ bool cMap::Create(std::string fileName, std::string name)
 					tiles[y * nWidth + x] = new cTile_Brick;
 					break;
 				case 'o':
-					tiles[y* nWidth + x] = new cTile_Brick;
+					tiles[y * nWidth + x] = new cTile_Sky;
+					vecPersistentItems.push_back(new cDynamic_Item(x, y, Assets::get().GetItem("Flames Cash")));
 					break;
 				case '1':
-					tiles[y * nWidth + x] = new cTile_Brick;
+
 					break;
 				default:
 					tiles[y * nWidth + x] = new cTile_Invisible_Boundary;
@@ -146,17 +147,10 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 	vecDyns.push_back(new cDynamic_Item(1, 9, Assets::get().GetItem("Small Health")));
 	vecDyns.push_back(new cDynamic_Item(2, 9, Assets::get().GetItem("Health Boost")));
 
-	//Add flames cash (FOR NOW - will implement adding these into the load map function so we can chagne these from editing level)
-	vecDyns.push_back(new cDynamic_Item(3, 9, Assets::get().GetItem("Flames Cash")));
-	/*vecDyns.push_back(new cDynamic_Item(4, 9, Assets::get().GetItem("Flames Cash")));
-	vecDyns.push_back(new cDynamic_Item(5, 9, Assets::get().GetItem("Flames Cash")));
-	vecDyns.push_back(new cDynamic_Item(6, 9, Assets::get().GetItem("Flames Cash")));
-	vecDyns.push_back(new cDynamic_Item(7, 9, Assets::get().GetItem("Flames Cash")));
-	vecDyns.push_back(new cDynamic_Item(8, 9, Assets::get().GetItem("Flames Cash")));
-	vecDyns.push_back(new cDynamic_Item(9, 9, Assets::get().GetItem("Flames Cash")));*/
 
-
-
+	//Add Items stored in level
+	for (auto item : vecPersistentItems)
+		vecDyns.push_back(item);
 
 	for (int i = 0; i < 3; i++)
 	{

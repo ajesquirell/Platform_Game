@@ -9,13 +9,18 @@ public:
 
 	virtual bool OnInteract(cDynamic* object);
 	virtual bool OnUse(cDynamic* object);
+	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D t);
+	void Update(float fElapsedTime);
 
 public:
-	cAnimator animItem;
 	std::string sName;
 	std::string sDescription;
 	bool bKeyItem = false;
 	bool bEquipable = false;
+	bool bGravityApplies = true;
+
+protected:
+	cAnimator animItem;
 };
 
 //================================================================================================

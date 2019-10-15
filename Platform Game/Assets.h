@@ -12,6 +12,8 @@
 	Should really figure out how to throw exceptions instead of just outputing an error when things aren't loaded right here
 +++++++++++++++*/
 
+#define RETURN_NEW_ITEM(n) return new cItem_ ##n
+
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
 {
 public:
@@ -44,10 +46,21 @@ public:
 
 	cItem* GetItem(std::string name)
 	{
-		if (mapItems[name] == nullptr)
+		if (mapItems[name] == 0)
 			std::cerr << "\nError: Could not retrieve item with the name \"" << name << "\". Please ensure it exists on disk and is loaded from Assets class.\n";
 
-		return mapItems[name];
+		switch (mapItems[name])
+		{
+		case 1:
+			RETURN_NEW_ITEM(Health);
+			break;
+		case 2:
+			RETURN_NEW_ITEM(HealthBoost);
+			break;
+		case 3:
+			RETURN_NEW_ITEM(FlamesCash);
+			break;
+		}
 	}
 
 	void LoadSprites();
@@ -60,6 +73,6 @@ private:
 
 	std::map<std::string, olc::Sprite*> mapSprites;
 	std::map<std::string, cMap*> mapMaps;
-	std::map<std::string, cItem*> mapItems;
+	std::map<std::string, int> mapItems;
 };
 

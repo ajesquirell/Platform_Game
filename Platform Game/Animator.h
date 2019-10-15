@@ -14,7 +14,7 @@ public:
 	float fTimeBetweenFrames = 0.1f; //Default
 	float fTimeCounter = 0.0f;
 	bool bAnimateOnceState = false;
-		bool bCompletedAnimation = false;
+	bool bCompletedAnimation = false;
 
 	cAnimator()
 	{
@@ -57,22 +57,22 @@ public:
 
 	void Update(float fElapsedTime)
 	{
-		fTimeCounter += fElapsedTime;
-		if (fTimeCounter >= fTimeBetweenFrames)
-		{
-			fTimeCounter -= fTimeBetweenFrames;
-			nCurrentFrame++;
-			if (nCurrentFrame >= mapStates[sCurrentState].size())
+			fTimeCounter += fElapsedTime;
+			if (fTimeCounter >= fTimeBetweenFrames)
 			{
-				if (bAnimateOnceState)
+				fTimeCounter -= fTimeBetweenFrames;
+				nCurrentFrame++;
+				if (nCurrentFrame >= mapStates[sCurrentState].size())
 				{
-					nCurrentFrame = nCurrentFrame - 1;
-					bCompletedAnimation = true;
+					if (bAnimateOnceState)
+					{
+						nCurrentFrame = nCurrentFrame - 1;
+						bCompletedAnimation = true;
+					}
+					else
+						nCurrentFrame = 0;
 				}
-				else
-					nCurrentFrame = 0;
 			}
-		}
 	}
 
 	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D& t)

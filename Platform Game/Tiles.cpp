@@ -77,7 +77,7 @@ void cTile_Brick::Update(float fElapsedTime)
 	//	broken = true;
 
 	if (animTile.sCurrentState == "break")
-		animTile.fTimeBetweenFrames = 0.05f;
+		animTile.fTimeBetweenFrames = 0.1f;
 	
 	animTile.Update(fElapsedTime);
 }

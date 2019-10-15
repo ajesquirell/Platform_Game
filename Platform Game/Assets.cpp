@@ -92,12 +92,12 @@ void Assets::LoadMaps()
 
 void Assets::LoadItems()
 {
-	auto load = [&](cItem* item)
+	auto load = [&](cItem* item, int id)
 	{
-		mapItems[item->sName] = item;
+		mapItems[item->sName] = id;
 	};
 
-	load(new cItem_Health);
-	load(new cItem_HealthBoost);
-	load(new cItem_FlamesCash);
+	load(new cItem_Health, 1);
+	load(new cItem_HealthBoost, 2);
+	load(new cItem_FlamesCash, 3);
 }
