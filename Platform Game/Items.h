@@ -9,8 +9,8 @@ public:
 
 	virtual bool OnInteract(cDynamic* object);
 	virtual bool OnUse(cDynamic* object);
-	void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D t);
-	void Update(float fElapsedTime);
+	virtual void DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D t);
+	virtual void Update(float fElapsedTime, cDynamic* player = nullptr);
 
 public:
 	std::string sName;

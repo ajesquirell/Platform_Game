@@ -334,19 +334,6 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 		float fNewObjectPosX = object->px + object->vx * fElapsedTime;
 		float fNewObjectPosY = object->py + object->vy * fElapsedTime;
 
-		//Check for pickups! 
-		/*if (HandlePickup(pCurrentMap->GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f)))
-			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 0.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f)))
-			SetTile(fNewPlayerPosX + 0.0f, fNewPlayerPosY + 1.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f)))
-			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 0.0f, L'.');
-
-		if (HandlePickup(GetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f)))
-			SetTile(fNewPlayerPosX + 1.0f, fNewPlayerPosY + 1.0f, L'.');*/
-
 
 		//Collision
 		if (object->bSolidVsMap)
@@ -400,11 +387,22 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 			}
 			else //Player moving down
 			{
-				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+				//Allow to fit in 1 wide gap going down
+				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f + 0.15f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f - 0.15f, fNewObjectPosY + 1.0f)->solid)
 				{
 					fNewObjectPosY = (int)fNewObjectPosY;
 					object->vy = 0;
 					object->bObjectOnGround = true;
+				}
+				//Still allow to snap into 1 wide opening in wall going left or right
+				else if ((GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) && !GetKey(olc::Key::DOWN).bHeld)
+				{
+					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+					{
+						fNewObjectPosY = (int)fNewObjectPosY;
+						object->vy = 0;
+						object->bObjectOnGround = true;
+					}
 				}
 			}
 		}
@@ -526,66 +524,6 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 		{
 			FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, pCurrentMap->skyColor); //Background fill -- "sky"
 			pCurrentMap->GetTile(x + fOffsetX, y + fOffsetY)->DrawSelf(this, x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
-
-			//switch (sTileID)
-			//{
-			//case L'.': // Sky
-			//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-			//	break;
-
-			//case "floor": //Floor
-			//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::CYAN);
-			//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteFloor);
-			//	break;
-
-			//case L'B':
-			//	//FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::RED);
-			//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, spriteBrick);
-			//	break;
-
-			//case L'b':
-			//{
-			//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-			//	
-			//	tile.animTile.Update(fElapsedTime);
-			//	//olc::GFX2D::Transform2D brickTrans;
-			//	//brickTrans.Translate(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY);
-			//	//animMoney.DrawSelf(this, brickTrans);
-			//	DrawSprite(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, tile.GetCurrentFrame());
-			//	break;
-			//}
-			//	
-			//case COIN:
-			//{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-			//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-			//	olc::GFX2D::Transform2D moneyTrans;
-			//	moneyTrans.Translate(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY);
-			//	animMoney.DrawSelf(this, moneyTrans);
-			//	break;
-			//}
-
-			//case TEST:
-			//{ //Brackets indicate scope lives only within this case statement (important for declaration of variables)
-			//	FillRect(x * nTileWidth - fTileOffsetX, y * nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, skyColor);
-			//	olc::GFX2D::Transform2D moneyTrans;
-			//	moneyTrans.Translate(-nTileWidth / 2, -nTileHeight / 2);
-			//	moneyTrans.Rotate(fPlayerVelY);
-			//	moneyTrans.Scale(fFaceDir, 1.0f);
-			//	moneyTrans.Translate(x * nTileWidth - fTileOffsetX + nTileWidth / 2, y * nTileHeight - fTileOffsetY + nTileHeight / 2);
-
-			//	animMoney.DrawSelf(this, moneyTrans);
-			//	break;
-			//}
-
-			//case L'P':
-			//	fPlayerPosX = x + fOffsetX;
-			//	fPlayerPosY = y + fOffsetY;
-			//	SetTile(x + fOffsetX, y + fOffsetY, L'.');
-
-			//default:
-			//	FillRect(x* nTileWidth - fTileOffsetX, y* nTileHeight - fTileOffsetY, nTileWidth, nTileHeight, olc::BLACK);
-			//	break;
-			//}
 		}
 	}
 
@@ -637,12 +575,12 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	*/
 
 	DrawString(140, 1, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
-	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P, Interact: F", olc::DARK_BLUE);
+	DrawString(0, ScreenHeight() - 25, "MOVE: <- ->, JUMP: Space\nInteract: F, Inventory: A\nPAUSE: P", olc::DARK_MAGENTA);
 
 	//Game end (for now of course)
 	if (m_pPlayer->nScore >= 370)
 	{
-		m_pPlayer->nScore = 0;
+		//m_pPlayer->nScore = 0;
 
 		//LoadLevel(2);
 	}

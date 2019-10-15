@@ -23,13 +23,13 @@ bool cItem::OnUse(cDynamic* object)
 
 void cItem::DrawSelf(olc::PixelGameEngine* pge, olc::GFX2D::Transform2D t)
 {
-	//In case we want to add any functionality here
+	//In case we want to add any functionality here in sub classes
 	animItem.DrawSelf(pge, t);
 }
 
-void cItem::Update(float fElapsedTime)
+void cItem::Update(float fElapsedTime, cDynamic* player)
 {
-	//In case we want to add any functionality here
+	//In case we want to add any functionality here in sub classes
 	animItem.Update(fElapsedTime);
 }
 
@@ -37,9 +37,9 @@ void cItem::Update(float fElapsedTime)
 //											Health - Give player 10 hp
 //================================================================================================
 cItem_Health::cItem_Health() : 
-	cItem("Small Health", "Restores 10 Health")
+	cItem("Health", "Restores 10 Health")
 {
-	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Money_09"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Health"));
 	animItem.ChangeState("default");
 	bGravityApplies = true;
 }
@@ -67,7 +67,7 @@ bool cItem_Health::OnUse(cDynamic* object)
 cItem_HealthBoost::cItem_HealthBoost() : 
 	cItem("Health Boost", "Increases Max Health by 10")
 {
-	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Health Boost"));
 	animItem.ChangeState("default");
 	bGravityApplies = true;
 }

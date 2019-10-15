@@ -77,6 +77,8 @@ void Assets::LoadSprites() //Single one time load of all sprite resources
 
 	 //Random
 	 load("Hi_Mom", "../Sprites/Hi_Mom.png");
+	 load("Health", "../Sprites/Health.png");
+	 load("Health Boost", "../Sprites/Health_Boost.png");
 }
 
 void Assets::LoadMaps()

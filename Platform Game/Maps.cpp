@@ -144,7 +144,7 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 	vecDyns.push_back(new cDynamic_Teleport(7.0f, 9.0f, "Level 2", 0.0f, 0.0f));
 
 	//Add Items
-	vecDyns.push_back(new cDynamic_Item(1, 9, Assets::get().GetItem("Small Health")));
+	vecDyns.push_back(new cDynamic_Item(1, 9, Assets::get().GetItem("Health")));
 	vecDyns.push_back(new cDynamic_Item(2, 9, Assets::get().GetItem("Health Boost")));
 
 
