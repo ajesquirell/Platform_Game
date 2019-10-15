@@ -603,11 +603,12 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 
 	// Draw Score
 	sScoreString = "Flames Cash: " + to_string(m_pPlayer->nScore);
-	DrawString(0, 0, sScoreString, olc::RED);
+	DrawString(1, 1, sScoreString, olc::RED);
 
 	// Draw Health
-	string sHealth = "HP: " + to_string(m_pPlayer->nHealth) + "/" + to_string(m_pPlayer->nHealthMax);
-	DisplayDialog({ sHealth }, ScreenWidth() * 0.08f, 10);
+	DrawString(1, 11, "HP: ", olc::DARK_BLUE);
+	for (int x = 0; x < m_pPlayer->nHealth; x++)
+		FillRect(25 + (x * 6), 10, 5, 8, olc::DARK_BLUE);
 
 	// Draw any dialog being displayed
 	if (bShowDialog)
@@ -633,7 +634,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	*/
 
-	DrawString(140, 0, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
+	DrawString(140, 1, "Jerryyyyyyyy", olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
 	DrawString(0, ScreenHeight() - 20, "MOVE: <- ->, JUMP: Space, \nPAUSE: P, Interact: F", olc::DARK_BLUE);
 
 	//Game end (for now of course)
