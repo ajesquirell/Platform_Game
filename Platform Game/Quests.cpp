@@ -66,6 +66,7 @@ bool cQuest_MainQuest::OnInteraction(std::vector<cDynamic*>& vecDyns, cDynamic* 
 		{
 			CMD(ShowDialog({ "[Bob]", "Hello!", "I have a quest", "for you!" }));
 			CMD(ShowDialog({ "You will need to", "speak to me through", "the teleporter" }));
+			CMD(ShowDialog({ "Also,", "talk to Nasser to see", "his dialog has changed." }));
 			CMD(AddQuest(new cQuest_BobsQuest));
 			nPhase = 1;
 			return true;
