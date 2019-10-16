@@ -84,7 +84,7 @@ bool Platformer::OnUserCreate()
 
 	
 
-	olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleC"), true); // Plays Sample C loop
+	olc::SOUND::PlaySample(Assets::get().GetSound("LitLoop"), true); // Plays Sample C loop
 
 	//Add First Quest
 	listQuests.push_front(new cQuest_MainQuest());
@@ -111,12 +111,12 @@ bool Platformer::OnUserUpdate(float fElapsedTime)
 	{
 		if (!bGamePaused) {
 			bGamePaused = true; /*Pause*/
-			olc::SOUND::StopSample(Assets::get().GetSound("sndSampleC"));
+			olc::SOUND::StopSample(Assets::get().GetSound("LitLoop"));
 			olc::SOUND::PlaySample(Assets::get().GetSound("sndGetMoney"));
 		}
 		else {
 			bGamePaused = false; /*Unpause*/
-			olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleC"), true);
+			olc::SOUND::PlaySample(Assets::get().GetSound("LitLoop"), true);
 		}
 	}
 	if (bGamePaused)

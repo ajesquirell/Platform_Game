@@ -117,5 +117,6 @@ void Assets::LoadSounds()
 	load("sndBoo","../Sounds/Boo.wav");
 	load("sndWuWuWu","../Sounds/WuWuWu.wav");
 	load("sndGetMoney","../Sounds/GetMoney.wav");
+	load("LitLoop", "../Sounds/LIIIIIIT.wav");
 }
 
