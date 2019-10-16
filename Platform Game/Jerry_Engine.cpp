@@ -496,6 +496,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 		auto i = remove_if(listQuests.begin(), listQuests.end(), [](const cQuest* d) {return d->bCompleted; });
 		if (i != listQuests.end())
 			listQuests.erase(i);
+	}
 
 		//Update tile animations
 		for (int x = 0; x < pCurrentMap->nWidth; x++)
@@ -506,7 +507,6 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 			}
 		}
 
-	}
 
 	fCameraPosX = m_pPlayer->px;
 	fCameraPosY = m_pPlayer->py;

@@ -192,6 +192,10 @@ bool cMap_Level2::PopulateDynamics(vector<cDynamic*>& vecDyns)
 	//Add Teleporters
 	vecDyns.push_back(new cDynamic_Teleport(10.0f, 5.0f, "Level 1", 0.0f, 0.0f));
 
+	//Add Items stored in level
+	for (auto item : vecPersistentItems)
+		vecDyns.push_back(item);
+
 	return true;
 }
 
