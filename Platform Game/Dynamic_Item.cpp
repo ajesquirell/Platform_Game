@@ -38,10 +38,10 @@ void cDynamic_Item::Update(float fElapsedTime, cDynamic* player)
 	item->Update(fElapsedTime);
 }
 
-void cDynamic_Item::OnInteract(cDynamic* player)
+bool cDynamic_Item::OnInteract(cDynamic* player)
 {
 	if (bCollected)
-		return;
+		return false;
 
 	if (item->OnInteract(player))
 	{
@@ -49,4 +49,6 @@ void cDynamic_Item::OnInteract(cDynamic* player)
 		g_engine->GiveItem(item);
 	}
 	bCollected = true;
+
+	return true;
 }

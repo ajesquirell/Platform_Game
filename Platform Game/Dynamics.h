@@ -30,7 +30,7 @@ public:
 public:
 	virtual void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) = 0; //Screen space offset, since we already have position as data member
 	virtual void Update(float fElapsedTime, cDynamic* player = nullptr) {}
-	virtual void OnInteract(cDynamic* player = nullptr) {}
+	virtual bool OnInteract(cDynamic* player = nullptr) { return false; }
 
 	static Platformer* g_engine;
 	static cScriptProcessor* g_script;
@@ -115,7 +115,7 @@ public:
 	cDynamic_Item(float x, float y, cItem* i);
 	void Update(float fElapsedTime, cDynamic* player = nullptr) override;
 	void DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) override;
-	void OnInteract(cDynamic* player = nullptr) override;
+	bool OnInteract(cDynamic* player = nullptr) override;
 
 public:
 	cItem* item;

@@ -241,7 +241,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				}
 
 				// Check if test point has hit a dynamic object
-				bool bInteraction;
+				bool bInteraction = false;
 				for (auto dyns : vecDynamics)
 				{
 					if (fTestX > dyns->px && fTestX < (dyns->px + 1.0f)
@@ -252,18 +252,27 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 							// Iterate through stack until something responds
 							// --Base quest should capture interactions not specified by other quests
 							
-							// Check if it's quest related
+							// First check if it's quest related
 							for (auto &quest : listQuests)
 								if (quest->OnInteraction(vecDynamics, dyns, cQuest::TALK))
 								{
 									bInteraction = true;
 									break;
 								}
-							// Some objects just do stuff when you interact with them
-							dyns->OnInteract(m_pPlayer);
 
-							// Then check if it's map related
-							pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK);
+							if (!bInteraction)
+							{
+								// Some objects just do stuff when you interact with them
+								if (dyns->OnInteract(m_pPlayer)) //ADD TALK NATURE
+									bInteraction = true;
+							}
+
+							if (!bInteraction)
+							{
+								// Then check if it's map related
+								if (pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK))
+									bInteraction = true;
+							}
 						}
 						else
 						{
@@ -451,15 +460,22 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 				{
 					if (object == m_pPlayer)
 					{
+						bool bInteraction = false;
 						//Object is the player and can interact with things
 						if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
 							&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
 						{
-							// Check if interaction is map related
-							pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+							if (!bInteraction)
+							{
+								// Check if interaction is map related
+								pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+							}
 
-							//Finally just check the object - (for items, non-important characters, etc)
-							dyn->OnInteract(object);
+							if (!bInteraction)
+							{
+								//Finally just check the object - (for items, non-important characters, etc)
+								dyn->OnInteract(object);
+							}
 						}
 					}
 				}
