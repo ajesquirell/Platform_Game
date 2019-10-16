@@ -31,7 +31,7 @@ bool cQuest_MainQuest::PopulateDynamics(std::vector<cDynamic*>& vecDyns, std::st
 		if (nPhase == 0)
 		{
 			cDynamic_Creature* bob = new cDynamic_Creature("Bob");
-			bob->px = 10.0f;
+			bob->px = 25.0f;
 			bob->py = 0.0f;
 			bob->fFaceDir = -1.0f;
 			vecDyns.push_back(bob);
