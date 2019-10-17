@@ -404,7 +404,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 					object->bObjectOnGround = true;
 				}
 				//Still allow to snap into 1 wide opening in wall going left or right
-				else if ((GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) && !GetKey(olc::Key::DOWN).bHeld)
+				else if ((GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) && !GetKey(olc::Key::DOWN).bHeld) //Change cause doesn't apply to npc's
 				{
 					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
 					{
@@ -547,6 +547,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	
 
 	// Draw Object
+	olc::GFX2D::Transform2D t;
 	for (auto& object : vecDynamics)
 			object->DrawSelf(this, fOffsetX, fOffsetY);
 

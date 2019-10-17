@@ -31,6 +31,7 @@ void cDynamic_Item::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy)
 	t.Translate((px - ox) * 22 + 22 / 2, (py - oy) * 22 + 22 / 2); //If we want to change resolution later, need to make a global constant instead of 22
 
 	item->DrawSelf(pge, t);
+	//pge->DrawSprite((px - ox) * 22, (py - oy) * 22, Assets::get().GetSprite("Jerry_Fall"));
 }
 
 void cDynamic_Item::Update(float fElapsedTime, cDynamic* player)

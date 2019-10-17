@@ -43,6 +43,8 @@ void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) 
 	t.Translate((px - ox) * 22 + 22/2, (py - oy) * 22 + 22/2); //If we want to change resolution later, need to make a global constant instead of 22
 
 	animations.DrawSelf(pge, t);
+	//olc::GFX2D::DrawSprite(Assets::get().GetSprite("Jerry_Fall"), t);
+	//pge->DrawSprite((px - ox) * 22, (py - oy) * 22, Assets::get().GetSprite("Money_00"));
 }
 
 void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
