@@ -127,6 +127,9 @@ public:
 	bool TakeItem(cItem* item);
 	bool HasItem(cItem* item);
 
+	// Since the PGEX has bugs as massive performance hit into the level
+	olc::Sprite* InvertSprite(olc::Sprite* spr);
+
 public:
 	vector<string> vecDialogToShow;
 	bool bShowDialog = false;

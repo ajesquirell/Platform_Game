@@ -547,7 +547,6 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	
 
 	// Draw Object
-	olc::GFX2D::Transform2D t;
 	for (auto& object : vecDynamics)
 			object->DrawSelf(this, fOffsetX, fOffsetY);
 
@@ -821,4 +820,19 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
 
 	return true;
+}
+
+olc::Sprite* Platformer::InvertSprite(olc::Sprite* spr)
+{
+	olc::Sprite* sprToDraw = new olc::Sprite(spr->width, spr->height);
+
+	for (int x = spr->width; x > 0; x--)
+	{
+		for (int y = 0; y < spr->height; y++)
+		{
+			sprToDraw->SetPixel(x - 1, y, spr->GetPixel(spr->width - x, y));
+		}
+	}
+
+	return sprToDraw;
 }

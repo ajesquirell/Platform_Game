@@ -1,7 +1,6 @@
 //Define Statements for using PGE + Extensions with an OOP structure
 // and main()
 
-
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
@@ -16,9 +15,10 @@
 int main()
 {
 	Platformer game;
+
 	if (game.Construct(264, 242, 4, 4))
-	//if (game.Construct(264, 242, 4, 4, false, true)) //VSync
-	//if (game.Construct(264, 900, 4, 4))
+		//if (game.Construct(264, 242, 4, 4, false, true)) //VSync
+		//if (game.Construct(264, 900, 4, 4))
 
 		game.Start();
 

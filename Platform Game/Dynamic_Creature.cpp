@@ -1,5 +1,6 @@
 #include "Dynamics.h"
 #include "Assets.h"
+#include "Jerry_Engine.h"
 
 cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
@@ -35,16 +36,24 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 
 void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) //Screen space offset, since we already have position as data member
 {
-	olc::GFX2D::Transform2D t;
-	t.Translate(-22 / 2, -22 / 2); //Align sprite to 0,0 to do affine transformations
-	t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
+	//olc::GFX2D::Transform2D t;
+	//t.Translate(-22 / 2, -22 / 2); //Align sprite to 0,0 to do affine transformations
+	//t.Scale(fFaceDir, 1.0f); //BUG WITH THIS??? CUTS OFF A RIGHT COLUMN OF PIXELS WHEN REFLECTED? Yeah bug is in the PGEX/Scaling transformation somewhere. Could just double the png's used and switch like that instead of scaling
 
-	//t.Rotate(fPlayerPosX);
-	t.Translate((px - ox) * 22 + 22/2, (py - oy) * 22 + 22/2); //If we want to change resolution later, need to make a global constant instead of 22
+	////t.Rotate(fPlayerPosX);
+	//t.Translate((px - ox) * 22 + 22/2, (py - oy) * 22 + 22/2); //If we want to change resolution later, need to make a global constant instead of 22
 
-	animations.DrawSelf(pge, t);
-	//olc::GFX2D::DrawSprite(Assets::get().GetSprite("Jerry_Fall"), t);
-	//pge->DrawSprite((px - ox) * 22, (py - oy) * 22, Assets::get().GetSprite("Money_00"));
+	//animations.DrawSelf(pge, t);
+
+	if (fFaceDir == cDynamic_Creature::LEFT)
+	{
+		pge->DrawSprite((px - ox) * 22, (py - oy) * 22, g_engine->InvertSprite(animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]));
+	}
+	else
+	{
+		pge->DrawSprite((px - ox) * 22, (py - oy) * 22, animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]);
+	}
+
 }
 
 void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
