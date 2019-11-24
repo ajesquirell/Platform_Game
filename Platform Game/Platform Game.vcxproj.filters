@@ -63,6 +63,9 @@
     <ClCompile Include="Dynamic_Creature_Jerry.cpp">
       <Filter>Source Files\Dynamics</Filter>
     </ClCompile>
+    <ClCompile Include="Game_Utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Items.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game_Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

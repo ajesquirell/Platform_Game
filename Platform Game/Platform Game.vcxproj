@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game_Utilities.cpp" />
     <ClCompile Include="Assets.cpp" />
     <ClCompile Include="Commands.cpp" />
     <ClCompile Include="Dynamic_Base.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="Tiles.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game_Utilities.h" />
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Assets.h" />
     <ClInclude Include="Commands.h" />

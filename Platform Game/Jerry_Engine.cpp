@@ -606,12 +606,13 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	return true;
 }
 
-void Platformer::ShowDialog(vector<string> vecLines, olc::Pixel color)
+void Platformer::ShowDialog(std::vector<std::string> vecLines, olc::Pixel color)
 {
 	vecDialogToShow = vecLines;
 	bShowDialog = true;
 	dialogColor = color;
 }
+
 
 void Platformer::DisplayDialog(vector<string> vecLines, int x, int y)
 {
@@ -751,7 +752,7 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 			highlighted = item;
 
 		//Update dynamic objects in case items have animation
-		item->Update(fElapsedTime); // (Not anymore)This WILL continue to update animations in game, but for what we have now you don't notice. We could always just save current frame and return to it
+		item->Update(fElapsedTime);
 
 	}
 
@@ -820,19 +821,4 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
 
 	return true;
-}
-
-olc::Sprite* Platformer::InvertSprite(olc::Sprite* spr)
-{
-	olc::Sprite* sprToDraw = new olc::Sprite(spr->width, spr->height);
-
-	for (int x = spr->width; x > 0; x--)
-	{
-		for (int y = 0; y < spr->height; y++)
-		{
-			sprToDraw->SetPixel(x - 1, y, spr->GetPixel(spr->width - x, y));
-		}
-	}
-
-	return sprToDraw;
 }

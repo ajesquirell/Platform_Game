@@ -1,6 +1,6 @@
 #include "Dynamics.h"
 #include "Assets.h"
-#include "Jerry_Engine.h"
+#include "Jerry_Engine.h" //Not needed?
 
 cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
@@ -47,7 +47,7 @@ void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) 
 
 	if (fFaceDir == cDynamic_Creature::LEFT)
 	{
-		pge->DrawSprite((px - ox) * 22, (py - oy) * 22, g_engine->InvertSprite(animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]));
+		pge->DrawSprite((px - ox) * 22, (py - oy) * 22, utility::InvertSprite(animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]));
 	}
 	else
 	{

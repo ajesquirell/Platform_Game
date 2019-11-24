@@ -127,13 +127,8 @@ public:
 	bool TakeItem(cItem* item);
 	bool HasItem(cItem* item);
 
-	// Since the PGEX has bugs as massive performance hit into the level
-	olc::Sprite* InvertSprite(olc::Sprite* spr);
-
 public:
 	vector<string> vecDialogToShow;
 	bool bShowDialog = false;
-	float fDialogX = 0.0f;
-	float fDialogY = 0.0f;
 	olc::Pixel dialogColor = olc::DARK_BLUE;
 };

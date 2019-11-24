@@ -2,6 +2,7 @@
 
 #include "olcPixelGameEngine.h"
 #include "Animator.h"
+#include "Game_Utilities.h"
 
 class Platformer;
 class cScriptProcessor;
