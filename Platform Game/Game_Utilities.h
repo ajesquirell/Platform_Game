@@ -11,5 +11,5 @@ namespace utility
 	using namespace std;
 
 	// Since the PGEX has bugs as massive performance hit into the level
-	olc::Sprite* InvertSprite(olc::Sprite* spr);
+	void DrawInvertedSprite(olc::PixelGameEngine* pge, float px, float py, olc::Sprite* spr);
 }

@@ -66,6 +66,9 @@
     <ClCompile Include="Game_Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Dynamic_Projectile.cpp">
+      <Filter>Source Files\Dynamics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine.h">

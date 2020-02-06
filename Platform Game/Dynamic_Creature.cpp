@@ -1,6 +1,5 @@
 #include "Dynamics.h"
 #include "Assets.h"
-#include "Jerry_Engine.h" //Not needed?
 
 cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 {
@@ -9,6 +8,7 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 	fFaceDir = +1.0f;
 	bSquat = false;
 	fStateTick = 2.0f;
+	bIsAttackable = true;
 
 	animations.mapStates["idle"].push_back(Assets::get().GetSprite("Jerry_Idle"));
 
@@ -22,7 +22,7 @@ cDynamic_Creature::cDynamic_Creature(std::string n) : cDynamic(n)
 	animations.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_3"));
 	animations.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_4"));
 	animations.mapStates["brake"].push_back(Assets::get().GetSprite("Jerry_Brake_5"));
-
+ 
 	animations.mapStates["squat"].push_back(Assets::get().GetSprite("Jerry_Squat"));
 
 	animations.mapStates["jump"].push_back(Assets::get().GetSprite("Jerry_Jump_1"));
@@ -47,7 +47,7 @@ void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) 
 
 	if (fFaceDir == cDynamic_Creature::LEFT)
 	{
-		pge->DrawSprite((px - ox) * 22, (py - oy) * 22, utility::InvertSprite(animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]));
+		utility::DrawInvertedSprite(pge, (px - ox) * 22, (py - oy) * 22, animations.mapStates[animations.sCurrentState][animations.nCurrentFrame]);
 	}
 	else
 	{
@@ -58,60 +58,108 @@ void cDynamic_Creature::DrawSelf(olc::PixelGameEngine* pge, float ox, float oy) 
 
 void cDynamic_Creature::Update(float fElapsedTime, cDynamic* player)
 {
-	if (bObjectOnGround)
+	if (fKnockBackTimer > 0.0f)
 	{
-		if (fabs(vx) == 0.0f)
+		if (KnockBackMode == KnockBackMode::both_omnidirectional) // Use this if projectile/ Enemy is stationary
 		{
-			animations.ChangeState("idle");
+			vx = fKnockBackDX * fKnockBackVel;
+			vy = fKnockBackDY * fKnockBackVel;
+		}
+		else if (KnockBackMode == KnockBackMode::both) // Useful for projectiles you want to provide x and y direction knockback (x knockback is always in direction of projectile movement)
+		{
+			vx = fKnockBackVel * fKnockBackXDir; // Will always knock back the direction the projectile is facing/ moving
+			vy = fKnockBackDY * fKnockBackVel; // Some Y direction factored in as well
+		}
+		else if (KnockBackMode == KnockBackMode::x_only) // Knock back in X direction only
+		{
+			vx = fKnockBackVel * fKnockBackXDir; // Will always knock back the direction the projectile is facing/ moving
+		}
+		else if (KnockBackMode == KnockBackMode::y_only) // Knock back in Y direction only
+		{
+			vy = fKnockBackDY * fKnockBackVel;
+		}
+		/*vx = fKnockBackDX * fKnockBackVel;
+		vy = fKnockBackDY * fKnockBackVel;*/
 
-			if (fabs(vx) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably shouldn't have this here but I think it's funny
+		fKnockBackTimer -= fElapsedTime;
+		if (fKnockBackTimer <= 0.0f)
+		{
+			fStateTick = 0.0f;
+			bControllable = true;
+			bIsAttackable = true;
+			bSolidVsDynamic = true;
+		}
+	}
+	else
+	{
+		if (bObjectOnGround)
+		{
+			if (fabs(vx) == 0.0f)
+			{
+				animations.ChangeState("idle");
+
+				if (fabs(vx) > 0.01f) //LITERALLY all this does is allow him to "dance" by trying to move when up against a wall, probably shouldn't have this here but I think it's funny
+					animations.ChangeState("run");
+			}
+			else if (fFaceDir == RIGHT && vx < 0 || fFaceDir == LEFT && vx > 0) //Just changed direction but still moving the opposite way -> braking
+			{
+				animations.ChangeState("brake");
+			}
+			else
+			{
 				animations.ChangeState("run");
-		}
-		else if (fFaceDir == RIGHT && vx < 0 || fFaceDir == LEFT && vx > 0) //Just changed direction but still moving the opposite way -> braking
-		{
-			animations.ChangeState("brake");
-		}
-		else
-		{
-			animations.ChangeState("run");
-		}
+			}
 
-		if (bSquat) //This is changed in the Input Handling section
-			animations.ChangeState("squat");
-	}
-	else
-	{
-		if (vy <= 0)
-		{
-			animations.ChangeState("jump", true);
+			if (bSquat) //This is changed in the Input Handling section
+				animations.ChangeState("squat");
 		}
 		else
 		{
-			animations.ChangeState("fall");
+			if (vy <= 0)
+			{
+				animations.ChangeState("jump", true);
+			}
+			else
+			{
+				animations.ChangeState("fall");
+			}
 		}
+
+		// Update facing direction when under control of script processor. Otherwise handled by input (player) or in creature's behavior
+		//if (sName != "Jerry")
+		if (!g_script->bPlayerControlEnabled)
+			fFaceDir = (vx < 0 ? -1.0f : vx > 0 ? 1.0f : fFaceDir);
+
+
+		/*if (nHealth <= 0)
+			animations.ChangeState("dead");*/
+
+
+			//Change animation speed based on object's vx -- Could put this in just the player class if we don't want all objects doing this
+		if (animations.sCurrentState == "run")
+			animations.fTimeBetweenFrames = 0.1f * (10.0f / fabs(vx));
+		else if (animations.sCurrentState == "brake")
+			animations.fTimeBetweenFrames = 0.05f;
+		else
+			animations.fTimeBetweenFrames = 0.1f;
+
+		animations.Update(fElapsedTime); //Update animation frame
+
+		Behavior(fElapsedTime, player);
 	}
+}
 
-	// Update facing direction when under control of script processor. Otherwise handled by input (player) or in creature's behavior
-	//if (sName != "Jerry")
-	if (!g_script->bPlayerControlEnabled)
-		fFaceDir = (vx < 0 ? -1.0f : vx > 0 ? 1.0f : fFaceDir);
-
-
-	/*if (nHealth <= 0)
-		animations.ChangeState("dead");*/
-
-
-	//Change animation speed based on object's vx -- Could put this in just the player class if we don't want all objects doing this
-	if (animations.sCurrentState == "run")
-		animations.fTimeBetweenFrames = 0.1f * (10.0f / fabs(vx));
-	else if (animations.sCurrentState == "brake")
-		animations.fTimeBetweenFrames = 0.05f;
-	else
-		animations.fTimeBetweenFrames = 0.1f;
-
-	animations.Update(fElapsedTime); //Update animation frame
-
-	Behavior(fElapsedTime, player);
+void cDynamic_Creature::KnockBack(float dx, float dy, cDynamic_Projectile* proj)
+{
+	KnockBackMode = proj->KnockBackMode;
+	fKnockBackDX = dx;
+	fKnockBackDY = dy;
+	fKnockBackVel = proj->fKnockBackVel;
+	fKnockBackXDir = proj->fFaceDir;
+	fKnockBackTimer = proj->fKnockBackDuration;
+	bSolidVsDynamic = false;
+	bControllable = false;
+	bIsAttackable = false;
 }
 
 void cDynamic_Creature::Behavior(float fElapsedTime, cDynamic* player)

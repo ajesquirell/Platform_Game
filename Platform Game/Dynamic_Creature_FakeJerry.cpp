@@ -1,4 +1,7 @@
 #include "Dynamics.h"
+#include "Items.h"
+#include "Assets.h" //One we want to change to match how he does his dependencies
+
 
 cDynamic_Creature_FakeJerry::cDynamic_Creature_FakeJerry() : cDynamic_Creature("Fake Jerry")
 {
@@ -6,6 +9,8 @@ cDynamic_Creature_FakeJerry::cDynamic_Creature_FakeJerry() : cDynamic_Creature("
 	nHealth = 10;
 	nHealthMax = 10;
 	fStateTick = 2.0f;
+
+	pEquipedWeapon = (cWeapon*)Assets::get().GetItem("Basic Sword");
 }
 
 void cDynamic_Creature_FakeJerry::Behavior(float fElapsedTime, cDynamic* player)
@@ -28,18 +33,29 @@ void cDynamic_Creature_FakeJerry::Behavior(float fElapsedTime, cDynamic* player)
 				fFaceDir = LEFT; // -1.0f
 			else
 				fFaceDir = RIGHT; // 1.0f
+
+			if (fDistance < 1.5f)
+				PerformAttack();
 		}
 		else
 		{
 			vx = 0;
 		}
 
-		if (fTargetY < 0 && bObjectOnGround)
+		if (fTargetY < 0 && bObjectOnGround) //Jump
 			vy = -12.0f;
 
 
 		fStateTick += 0.8f;
 	}
 	//vx += fFaceDir * 5.0f * fElapsedTime;
-	vx += fFaceDir * (bObjectOnGround && vx >= 0 ? 10.0f : bObjectOnGround ? 5.0f : 8.0f)* fElapsedTime;
+	vx += fFaceDir * (bObjectOnGround && abs(vx) >= 0 ? 10.0f : bObjectOnGround ? 5.0f : 8.0f)* fElapsedTime;
+}
+
+void cDynamic_Creature_FakeJerry::PerformAttack()
+{
+	if (pEquipedWeapon == nullptr)
+		return;
+
+	pEquipedWeapon->OnUse(this);
 }

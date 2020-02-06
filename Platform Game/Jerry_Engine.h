@@ -34,8 +34,8 @@ private:
 	//Player Properties
 	cDynamic_Creature_Jerry* m_pPlayer = nullptr;
 
-	vector<cDynamic*> vecDynamics;
-
+	vector<cDynamic*> vecDynamics; // Fixed - Changed depending on quest and maps
+	vector<cDynamic*> vecProjectiles; // Transient - Can be added and removed easily (only of type cDynamic b/c we want to also respond to physics engine like vecDynamics w/o duplicating code
 	cScriptProcessor m_script;
 
 	list<cQuest*> listQuests;
@@ -122,10 +122,15 @@ public:
 	void ChangeMap(string sMapName, float x, float y);
 	void AddQuest(cQuest* quest);
 
+	void AddProjectile(cDynamic_Projectile* proj);
+
 	//Inventory handling convenience
 	bool GiveItem(cItem* item);
 	bool TakeItem(cItem* item);
 	bool HasItem(cItem* item);
+
+	void Attack(cDynamic_Creature* aggressor, cWeapon* weapon);
+	void Damage(cDynamic_Projectile* projectile, cDynamic_Creature* victim);
 
 public:
 	vector<string> vecDialogToShow;

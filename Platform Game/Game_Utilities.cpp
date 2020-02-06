@@ -1,8 +1,9 @@
 #include "Game_Utilities.h"
 #include "Jerry_Engine.h"
+#include "olcPixelGameEngine.h"
 
 
-olc::Sprite* utility::InvertSprite(olc::Sprite* spr)
+void utility::DrawInvertedSprite(olc::PixelGameEngine* pge, float px, float py, olc::Sprite* spr)
 {
 	olc::Sprite* sprToDraw = new olc::Sprite(spr->width, spr->height);
 
@@ -14,5 +15,6 @@ olc::Sprite* utility::InvertSprite(olc::Sprite* spr)
 		}
 	}
 
-	return sprToDraw;
+	pge->DrawSprite(px, py, sprToDraw);
+	delete sprToDraw;
 }

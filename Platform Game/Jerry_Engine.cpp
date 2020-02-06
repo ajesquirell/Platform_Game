@@ -37,6 +37,7 @@ bool Platformer::OnUserCreate()
 	cCommand::g_engine = this;
 	cQuest::g_engine = this;
 	cDynamic::g_engine = this;
+	cItem::g_engine = this;
 
 	cMap::g_script = &m_script;
 	cQuest::g_script = &m_script;
@@ -91,9 +92,10 @@ bool Platformer::OnUserCreate()
 
 	//Player init
 	m_pPlayer = new cDynamic_Creature_Jerry(); //For now sprites/ anims are hard coded to be Jerry
+	GiveItem(m_pPlayer->pEquipedWeapon);
 
 	//Initial Map
-	ChangeMap("Level 1", 0, 0);
+	ChangeMap("Level 1", 0, 5);
 
 	return true;
 }
@@ -150,134 +152,148 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	//Update script
 	m_script.ProcessCommands(fElapsedTime);
 
-	if (m_script.bPlayerControlEnabled)
+	// Erase and delete redundant projectiles
+	vecProjectiles.erase(
+		remove_if(vecProjectiles.begin(), vecProjectiles.end(),
+			[](const cDynamic* d) {return ((cDynamic_Projectile*)d)->bRedundant; }), vecProjectiles.end());
+
+	if (m_script.bPlayerControlEnabled) // Commands/ script processor allow player control
 	{
-
-		//Handle Input
-		if (IsFocused())
+		if (m_pPlayer->bControllable) // Knock Back allows player control
 		{
-			if (GetKey(olc::Key::UP).bHeld)
+			//Handle Input
+			if (IsFocused())
 			{
-				m_pPlayer->vy = -6.0f;
-			}
-
-			m_pPlayer->bSquat = false; //Reset flag
-			if (GetKey(olc::Key::DOWN).bHeld)
-			{
-				m_pPlayer->vy = 6.0f;
-				m_pPlayer->bSquat = true;
-			}
-
-			if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
-			{
-				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx <= 0 ? -25.0f : m_pPlayer->bObjectOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
-																																	//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
-				m_pPlayer->fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
-				//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
-			}
-
-			if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
-			{
-				if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
-					m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx >= 0 ? 25.0f : m_pPlayer->bObjectOnGround ? 8.0f : 14.0f) * fElapsedTime;
-
-				m_pPlayer->fFaceDir = +1.0f;
-				//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
-			}
-
-			if (GetKey(olc::Key::A).bReleased) //Access Inventory
-			{
-				inventoryColor.a = 0; //Reset alpha to do fading
-				nInvSelectX = 0;
-				nInvSelectY = 0;
-				vecInvSelect.clear();
-				vecInvSelect.push_back(new InvSelect(nInvSelectX, nInvSelectY, 255));
-				nGameMode = MODE_INVENTORY;
-			}
-
-			if (GetKey(olc::Key::SPACE).bPressed)
-			{
-				if (m_pPlayer->bObjectOnGround)
+				if (GetKey(olc::Key::UP).bHeld)
 				{
-					m_pPlayer->vy = -12.0f;
-					//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
-					olc::SOUND::PlaySample(Assets::get().GetSound("sndBoo"));
-				}
-			}
-			if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed
-			{
-				if (m_pPlayer->vy < 0) //Is currently jumping
-				{
-					m_pPlayer->vy += 35.0f * fElapsedTime;
-				}
-			}
-
-			if (GetKey(olc::Key::Z).bPressed) //TEST/DEBUG
-			{
-				CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
-				//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
-				//CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
-				//CMD(ShowDialog({ "Oh silly Jerry" }));
-				//CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
-				CMD(MoveTo(m_pPlayer, 7, 9, 1.0f));
-				//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
-			}
-
-			if (GetKey(olc::F).bPressed) // Interaction
-			{
-				// Grab a point from the direction the player is facing and check for interactions
-				float fTestX, fTestY;
-
-				if (m_pPlayer->fFaceDir == 1.0f)
-				{
-					fTestX = m_pPlayer->px + 1.5f; //Test probe in center of adjacent tile
-					fTestY = m_pPlayer->py + 0.5f;
-				}
-				if (m_pPlayer->fFaceDir == -1.0f)
-				{
-					fTestX = m_pPlayer->px - 0.5f;
-					fTestY = m_pPlayer->py + 0.5f;
+					m_pPlayer->vy = -6.0f;
 				}
 
-				// Check if test point has hit a dynamic object
-				bool bInteraction = false;
-				for (auto dyns : vecDynamics)
+				m_pPlayer->bSquat = false; //Reset flag
+				if (GetKey(olc::Key::DOWN).bHeld)
 				{
-					if (fTestX > dyns->px && fTestX < (dyns->px + 1.0f)
-						&& fTestY > dyns->py && fTestY < (dyns->py + 1.0f))
+					m_pPlayer->vy = 6.0f;
+					m_pPlayer->bSquat = true;
+				}
+
+				if (GetKey(olc::Key::LEFT).bHeld && !GetKey(olc::Key::RIGHT).bHeld) //LEFT (and ONLY left - otherwise b/c of my velocity mechanics you can accelerate while in "braking" positon if you hold down both buttons
+				{
+					if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+						m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx <= 0 ? -25.0f : m_pPlayer->bObjectOnGround ? -8.0f : -14.0f) * fElapsedTime; //If on ground accelerating / else if on ground braking+turning around/ else in air
+																																		//Player has more control on ground rather than in air, and when turning around it goes a little slower, feels more like og Mario			
+					m_pPlayer->fFaceDir = -1.0f; //When drawing, we will scale player with this to give him correct facing							//14.0f is perfect in-air number - when running and jumping you can't quite make it back to the same block you started on
+					//fFaceDir = bPlayerOnGround ? -1.0f : fFaceDir; //More like original NES Mario - can only change direction when on ground
+				}
+
+				if (GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //RIGHT
+				{
+					if (!GetKey(olc::Key::DOWN).bHeld) //Stop movement if crouching/squatting
+						m_pPlayer->vx += (m_pPlayer->bObjectOnGround && m_pPlayer->vx >= 0 ? 25.0f : m_pPlayer->bObjectOnGround ? 8.0f : 14.0f) * fElapsedTime;
+
+					m_pPlayer->fFaceDir = +1.0f;
+					//fFaceDir = bPlayerOnGround ? +1.0f : fFaceDir;
+				}
+
+				if (GetKey(olc::Key::Z).bReleased) //Access Inventory
+				{
+					inventoryColor.a = 0; //Reset alpha to do fading
+					nInvSelectX = 0;
+					nInvSelectY = 0;
+					vecInvSelect.clear();
+					vecInvSelect.push_back(new InvSelect(nInvSelectX, nInvSelectY, 255));
+					nGameMode = MODE_INVENTORY;
+				}
+
+				if (GetKey(olc::Key::SPACE).bPressed)
+				{
+					if (m_pPlayer->bObjectOnGround)
 					{
-						if (dyns->bFriendly)
+						m_pPlayer->vy = -12.0f;
+						//olc::SOUND::PlaySample(sndSampleA); // Plays Sample A
+						olc::SOUND::PlaySample(Assets::get().GetSound("sndBoo"));
+					}
+				}
+				if (!GetKey(olc::Key::SPACE).bHeld) //Allows for variable jump height depending on how long space is pressed
+				{
+					if (m_pPlayer->vy < 0) //Is currently jumping
+					{
+						m_pPlayer->vy += 35.0f * fElapsedTime;
+					}
+				}
+
+				if (GetKey(olc::Key::A).bPressed) //TEST/DEBUG
+				{
+					CMD(MoveTo(m_pPlayer, 0, 9, 1.0f));
+					//CMD(MoveTo(vecDynamics[1], 1, 9, 2.0f));
+					//CMD(MoveTo(vecDynamics[2], 1, 9, 2.0f));
+					//CMD(ShowDialog({ "Oh silly Jerry" }));
+					//CMD(ShowDialog({ "I think OOP", "is really useful" }, olc::RED));
+					CMD(MoveTo(m_pPlayer, 7, 9, 1.0f));
+					//CMD(ChangeMap("Level 2", 0.0f, 0.0f));
+				}
+
+				if (GetKey(olc::Key::X).bPressed) // Interaction
+				{
+					// Grab a point from the direction the player is facing and check for interactions
+					float fTestX, fTestY;
+
+					if (m_pPlayer->fFaceDir == 1.0f)
+					{
+						fTestX = m_pPlayer->px + 1.5f; //Test probe in center of adjacent tile
+						fTestY = m_pPlayer->py + 0.5f;
+					}
+					if (m_pPlayer->fFaceDir == -1.0f)
+					{
+						fTestX = m_pPlayer->px - 0.5f;
+						fTestY = m_pPlayer->py + 0.5f;
+					}
+
+					// Check if test point has hit a dynamic object
+					bool bInteraction = false;
+					for (auto dyns : vecDynamics)
+					{
+						if (fTestX > dyns->px&& fTestX < (dyns->px + 1.0f)
+							&& fTestY > dyns->py&& fTestY < (dyns->py + 1.0f))
 						{
-							// Iterate through stack until something responds
-							// --Base quest should capture interactions not specified by other quests
-							
-							// First check if it's quest related
-							for (auto &quest : listQuests)
-								if (quest->OnInteraction(vecDynamics, dyns, cQuest::TALK))
+							if (dyns->bFriendly)
+							{
+								// Iterate through stack until something responds
+								// --Base quest should capture interactions not specified by other quests
+
+								// First check if it's quest related
+								for (auto& quest : listQuests)
+									if (quest->OnInteraction(vecDynamics, dyns, cQuest::TALK))
+									{
+										bInteraction = true;
+										break;
+									}
+
+								if (!bInteraction)
 								{
-									bInteraction = true;
-									break;
+									// Some objects just do stuff when you interact with them
+									if (dyns->OnInteract(m_pPlayer)) //ADD TALK NATURE
+										bInteraction = true;
 								}
 
-							if (!bInteraction)
-							{
-								// Some objects just do stuff when you interact with them
-								if (dyns->OnInteract(m_pPlayer)) //ADD TALK NATURE
-									bInteraction = true;
+								if (!bInteraction)
+								{
+									// Then check if it's map related
+									if (pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK))
+										bInteraction = true;
+								}
 							}
+							else
+							{
+								// Interaction not friendly - only enemies
+								// are not friendly - so attack
+								m_pPlayer->PerformAttack();
+							}
+						}
+					}
 
-							if (!bInteraction)
-							{
-								// Then check if it's map related
-								if (pCurrentMap->OnInteraction(vecDynamics, dyns, cMap::TALK))
-									bInteraction = true;
-							}
-						}
-						else
-						{
-							// Interaction not friendly - only enemies - so Attack
-						}
+					if (!bInteraction) // Default action is attack
+					{
+						m_pPlayer->PerformAttack();
 					}
 				}
 			}
@@ -290,7 +306,7 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 
 		if (bShowDialog)
 		{
-			if (GetKey(olc::Key::F).bPressed)
+			if (GetKey(olc::Key::X).bPressed)
 			{
 				bShowDialog = false;
 				m_script.CompleteCommand();
@@ -300,212 +316,251 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 
 
 
-	//Loop through dynamic objects (creatures?)
-	for (auto& object : vecDynamics)
-	{
-		if (object->bGravityApplies)
-			object->vy += 20.0f * fElapsedTime; //Gravity
-
-		if (object->bObjectOnGround)
+	//Loop through dynamic objects
+	bool bWorkingWithProjectiles = false;
+	for (auto& source : { &vecDynamics, &vecProjectiles }) // Glue together vecDynamics and vecProjectiles to reuse code,
+															// but the two vectors don't interfere with each other
+	{																
+		for (auto& object : *source)
 		{
-			object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
-			if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
+			if (object->bGravityApplies)
+				object->vy += 20.0f * fElapsedTime; //Gravity
+
+			if (object->bObjectOnGround)
 			{
-				if (object == m_pPlayer) {
-					if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
-						object->vx = 0.0f;
-				}
-				//else object not player, and method to stop
-				//should be defined in behavior
-			}
-		}
-
-
-		////Animation overrides
-		//if (bSquat)
-		//	animPlayer.ChangeState("squat");
-
-		//Clamp Velocity to prevent getting out of control
-		if (object->vx > 10.0f)
-			object->vx = 10.0f;
-
-		if (object->vx < -10.0f)
-			object->vx = -10.0f;
-
-		if (object->vy > 100.0f)
-			object->vy = 100.0f;
-
-		if (object->vy < -100.0f)
-			object->vy = -100.0f;
-
-
-		//Calculate potential new position
-		float fNewObjectPosX = object->px + object->vx * fElapsedTime;
-		float fNewObjectPosY = object->py + object->vy * fElapsedTime;
-
-
-		//Collision
-		if (object->bSolidVsMap)
-		{
-			if (object->vx <= 0) //Player moving left
-			{
-				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
-				{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
-					fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
-					object->vx = 0;
-				}
-			}
-			else if (object->vx > 0) //Player moving Right
-			{
-				if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
+				object->vx += -3.0f * object->vx * fElapsedTime; //Add some drag so it doesn't feel like ice
+				if (fabs(object->vx) < 0.05f) //Clamp vel to 0 if near 0 to allow player to stop
 				{
-					fNewObjectPosX = (int)fNewObjectPosX;
-					object->vx = 0;
+					if (object == m_pPlayer) {
+						if (!GetKey(olc::Key::RIGHT).bHeld && !GetKey(olc::Key::LEFT).bHeld) //In release mode, fps is so high that because of fElapsedTime scaling acceleration																		//it wouldn't be able to get past this stopping threshold, leaving player unable to move - if statement is soln
+							object->vx = 0.0f;
+					}
+					//else object not player, and method to stop
+					//should be defined in behavior
 				}
-
 			}
 
-			object->bObjectOnGround = false; //Clear flag
 
-			if (object->vy <= 0) //Player moving up
+			////Animation overrides
+			//if (bSquat)
+			//	animPlayer.ChangeState("squat");
+
+			//Clamp Velocity to prevent getting out of control
+			if (!object->bIsProjectile)
 			{
-				//Already resolved X-direction collisions, so we can use the new X position and new Y position
-				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+				if (object->vx > 10.0f)
+					object->vx = 10.0f;
+
+				if (object->vx < -10.0f)
+					object->vx = -10.0f;
+
+				if (object->vy > 100.0f)
+					object->vy = 100.0f;
+
+				if (object->vy < -100.0f)
+					object->vy = -100.0f;
+			}
+
+			//Calculate potential new position
+			float fNewObjectPosX = object->px + object->vx * fElapsedTime;
+			float fNewObjectPosY = object->py + object->vy * fElapsedTime;
+
+
+			//Collision (Object vs Map)
+			if (object->bSolidVsMap)
+			{
+				bool bCollisionWithMap = false; //For making projectiles "redundant" when hit map
+
+				if (object->vx <= 0) //Player moving left
 				{
-					/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
-					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.0f, object->py + 0.9f)->solid)  //0.9f because we're not checking Y direction collision right here, and we don't want that to register a collsion, but we still have to check that bottom left corner of the player
+					{																																//And the 0.9f allows player to fit in gaps that are only 1 unit across
+						fNewObjectPosX = (int)fNewObjectPosX + 1;																					//Basically makes so truncation of tiles doesn't catch us.
+						object->vx = 0;
+						bCollisionWithMap = true;
+					}
+				}
+				else if (object->vx > 0) //Player moving Right
+				{
+					if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 1.0f, object->py + 0.9f)->solid)
 					{
-						pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch(); //Only break one block at a time
+						fNewObjectPosX = (int)fNewObjectPosX;
+						object->vx = 0;
+						bCollisionWithMap = true;
 					}
 
-					else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
-					{
-						pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					}
-
-					else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
-					{
-						pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
-					}
-
-					/***********************************************************************************/
-
-					fNewObjectPosY = (int)fNewObjectPosY + 1;
-					object->vy = 0;
 				}
-			}
-			else //Player moving down
-			{
-				//Allow to fit in 1 wide gap going down
-				if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f + 0.15f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f - 0.15f, fNewObjectPosY + 1.0f)->solid)
+
+				if (object->bIsProjectile && bCollisionWithMap)
 				{
-					fNewObjectPosY = (int)fNewObjectPosY;
-					object->vy = 0;
-					object->bObjectOnGround = true;
+					object->bRedundant = true;
 				}
-				//Still allow to snap into 1 wide opening in wall going left or right
-				else if ((GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) && !GetKey(olc::Key::DOWN).bHeld) //Change cause doesn't apply to npc's
+
+				object->bObjectOnGround = false; //Clear flag
+
+				if (object->vy <= 0) //Player moving up
 				{
-					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
+					//Already resolved X-direction collisions, so we can use the new X position and new Y position
+					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 0.0f)->solid)
+					{
+						/***Check for breakable blocks (putting here allows for collision AND breaking)***/  //We could get rid of breakable flag and just use return from OnBreak()
+						if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid && pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid) //Needs to be first in if statement(checked first)
+						{
+							pCurrentMap->GetTile(fNewObjectPosX + 0.5f, fNewObjectPosY + 0.0f)->OnPunch(); //Only break one block at a time
+						}
+
+						else if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->solid)
+						{
+							pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						}
+
+						else if (pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->solid)
+						{
+							pCurrentMap->GetTile(fNewObjectPosX + 1.0f, fNewObjectPosY + 0.0f)->OnPunch();
+						}
+
+						/***********************************************************************************/
+
+						fNewObjectPosY = (int)fNewObjectPosY + 1;
+						object->vy = 0;
+					}
+				}
+				else //Player moving down
+				{
+					//Allow to fit in 1 wide gap going down
+					if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f + 0.15f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f - 0.15f, fNewObjectPosY + 1.0f)->solid)
 					{
 						fNewObjectPosY = (int)fNewObjectPosY;
 						object->vy = 0;
 						object->bObjectOnGround = true;
 					}
-				}
-			}
-		}
-
-
-		float fDynamicObjectPosX = fNewObjectPosX;
-		float fDynamicObjectPosY = fNewObjectPosY;
-
-		// Dynamic Object Collision
-		for (auto& dyn : vecDynamics)
-		{
-			if (dyn != object) // Don't check object against itself
-			{
-				// If objects are solid then they must not overlap
-				if (dyn->bSolidVsDynamic && object->bSolidVsDynamic)
-				{
-					if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
-						&& object->py < (dyn->py + 1.0f) && (object->py + 1.0f) > dyn->py)
+					//Still allow to snap into 1 wide opening in wall going left or right
+					else if ((GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::RIGHT).bHeld) && !GetKey(olc::Key::DOWN).bHeld) //Change cause doesn't apply to npc's
 					{
-						// First check horizontally - Left first
-						if (object->vx <= 0)
-							fDynamicObjectPosX = dyn->px + 1.0f;
-						else
-							fDynamicObjectPosX = dyn->px - 1.0f;
-
-						object->vx = 0;
-					}
-
-					if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
-						&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
-					{
-						//Then check vertically - Up first
-						if (object->vy <= 0)
-							fDynamicObjectPosY = dyn->py + 1.0f;
-						else
+						if (pCurrentMap->GetTile(fNewObjectPosX + 0.0f, fNewObjectPosY + 1.0f)->solid || pCurrentMap->GetTile(fNewObjectPosX + 0.99999f, fNewObjectPosY + 1.0f)->solid)
 						{
-							fDynamicObjectPosY = dyn->py - 1.0f;
+							fNewObjectPosY = (int)fNewObjectPosY;
+							object->vy = 0;
 							object->bObjectOnGround = true;
 						}
-
-						object->vy = 0;
 					}
-
 				}
-				else
+			}
+
+
+			float fDynamicObjectPosX = fNewObjectPosX;
+			float fDynamicObjectPosY = fNewObjectPosY;
+
+			// Dynamic Object Collision (Object vs Object)
+			for (auto& dyn : vecDynamics) // Loop through all OTHER dynamic objects
+			{
+				if (dyn != object) // Don't check object against itself
 				{
-					if (object == m_pPlayer)
+					// If objects are solid then they must not overlap
+					if (dyn->bSolidVsDynamic && object->bSolidVsDynamic)
 					{
-						bool bInteraction = false;
-						//Object is the player and can interact with things
+						if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+							&& object->py < (dyn->py + 1.0f) && (object->py + 1.0f) > dyn->py)
+						{
+							// First check horizontally - Left first
+							if (object->vx <= 0)
+								fDynamicObjectPosX = dyn->px + 1.0f;
+							else
+								fDynamicObjectPosX = dyn->px - 1.0f;
+
+							object->vx = 0;
+						}
+
 						if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
 							&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
 						{
-							if (!bInteraction)
+							//Then check vertically - Up first
+							if (object->vy <= 0)
+								fDynamicObjectPosY = dyn->py + 1.0f;
+							else
 							{
-								// Check if interaction is map related
-								pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+								fDynamicObjectPosY = dyn->py - 1.0f;
+								object->bObjectOnGround = true;
 							}
 
-							if (!bInteraction)
+							object->vy = 0;
+						}
+
+					}
+					else
+					{
+						if (object == m_pPlayer) // Only player can interact with items and such (could change to make things interesting)
+						{
+							bool bInteraction = false; //Not sure if going to use - would use this same way as with input, so we limit the number of responses we get from an interaction to only the most important
+							if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+								&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
 							{
-								//Finally just check the object - (for items, non-important characters, etc)
-								dyn->OnInteract(object);
+								if (!bInteraction)
+								{
+									// Check if interaction is map related
+									pCurrentMap->OnInteraction(vecDynamics, dyn, cMap::WALK);
+									//bInteraction = true; //Should we do this?
+								}
+
+								if (!bInteraction)
+								{
+									//Finally just check the object - (for items, non-important characters, etc)
+									dyn->OnInteract(object);
+									//bInteraction = true; //Should we do this?
+								}
+							}
+						}
+						else
+						{
+							if (bWorkingWithProjectiles)
+							{
+								if (fDynamicObjectPosX < (dyn->px + 1.0f) && (fDynamicObjectPosX + 1.0f) > dyn->px
+									&& fDynamicObjectPosY < (dyn->py + 1.0f) && (fDynamicObjectPosY + 1.0f) > dyn->py)
+								{
+									if (dyn->bFriendly != object->bFriendly)
+									{
+										// We know object is a projectile, so dyn is something
+										// opposite that it has overlapped with
+										if (dyn->bIsAttackable)
+										{
+											// Dynamic object is a creature
+											Damage((cDynamic_Projectile*)object, (cDynamic_Creature*)dyn);
+										}
+									}
+								}
 							}
 						}
 					}
 				}
 			}
+
+
+
+
+			object->px = fDynamicObjectPosX;
+			object->py = fDynamicObjectPosY;
+
+
+			//Update dynamic objects
+			object->Update(fElapsedTime, m_pPlayer);
 		}
-
-
-
-
-		object->px = fDynamicObjectPosX;
-		object->py = fDynamicObjectPosY;
-
-
-		//Update dynamic objects
-		object->Update(fElapsedTime, m_pPlayer);
-
-		// Remove quests that have been completed
-		auto i = remove_if(listQuests.begin(), listQuests.end(), [](const cQuest* d) {return d->bCompleted; });
-		if (i != listQuests.end())
-			listQuests.erase(i);
+		bWorkingWithProjectiles = true; // Will repeat all this code for vecProjectiles
 	}
+		
+	// Remove quests that have been completed
+	auto i = remove_if(listQuests.begin(), listQuests.end(), [](const cQuest* d) {return d->bCompleted; });
+	if (i != listQuests.end())
+		listQuests.erase(i);
+	
 
-		//Update tile animations
-		for (int x = 0; x < pCurrentMap->nWidth; x++)
+	//Update tile animations
+	for (int x = 0; x < pCurrentMap->nWidth; x++)
+	{
+		for (int y = 0; y < pCurrentMap->nHeight; y++)
 		{
-			for (int y = 0; y < pCurrentMap->nHeight; y++)
-			{
-				pCurrentMap->GetTile(x, y)->Update(fElapsedTime);
-			}
+			pCurrentMap->GetTile(x, y)->Update(fElapsedTime);
 		}
+	}
 
 
 	fCameraPosX = m_pPlayer->px;
@@ -547,8 +602,9 @@ bool Platformer::UpdateLocalMap(float fElapsedTime)
 	
 
 	// Draw Object
-	for (auto& object : vecDynamics)
-			object->DrawSelf(this, fOffsetX, fOffsetY);
+	for (auto& source : { &vecDynamics, &vecProjectiles })
+		for (auto& dyns : *source)
+			dyns->DrawSelf(this, fOffsetX, fOffsetY);
 
 	m_pPlayer->DrawSelf(this, fOffsetX, fOffsetY); // May be a bit wasteful, and could just iterate backwards through ranged for loop above so that player is drawn last... figure out later
 
@@ -664,6 +720,7 @@ void Platformer::AddQuest(cQuest* quest)
 
 bool Platformer::GiveItem(cItem* item)
 {
+	//m_script.AddCommand(new cCommand_ShowDialog({ "You have found a" , item->sName }));
 	listItems.push_back(item);
 	return true;
 }
@@ -778,7 +835,7 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 		vecInvSelect.erase(v);
 
 
-	if (GetKey(olc::A).bReleased)
+	if (GetKey(olc::Key::Z).bReleased)
 	{
 		nGameMode = MODE_LOCAL_MAP;
 	}
@@ -793,10 +850,10 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 
 		if (!highlighted->bKeyItem)
 		{
-			DrawString(80, 160, "(Press F to use)");
+			DrawString(80, 160, "(Press X to use)");
 		}
 
-		if (GetKey(olc::F).bPressed)
+		if (GetKey(olc::Key::X).bPressed)
 		{
 			//Use selected item
 			if (!highlighted->bKeyItem)
@@ -821,4 +878,59 @@ bool Platformer::UpdateInventory(float fElapsedTime)
 	DrawString(128, 52, "MAX HEALTH:" + to_string(m_pPlayer->nHealthMax));
 
 	return true;
+}
+
+void Platformer::Attack(cDynamic_Creature* aggressor, cWeapon* weapon)
+{
+	// Don't use weapon on victim, use on aggressor - could modify weapon's behavior based on user
+	weapon->OnUse(aggressor);
+}
+
+void Platformer::AddProjectile(cDynamic_Projectile* proj)
+{
+	vecProjectiles.push_back(proj);
+}
+
+void Platformer::Damage(cDynamic_Projectile* projectile, cDynamic_Creature* victim)
+{
+	if (victim != nullptr)
+	{
+		// Attack victim with damage (OOP will allow each object to handle going below 0 in its own way)
+		victim->nHealth -= projectile->nDamage;
+
+		// Knock victim back
+		float tx = victim->px - projectile->px;
+		float ty = victim->py - projectile->py;
+
+		float d = sqrtf(tx * tx + ty * ty);
+
+		if (d < 0.01f) d = 0.1f; // This makes knock back have a lesser effect if the enemy is closer to you. But need something like this because game freezes if divide by 0
+		//We dont need to change (just) d, we should change tx/ty to actually get a high enough number to move him
+
+		// After a hit, the object experiences knock back, where it is temporarily
+		// under system control. This delivers two functions, the first being
+		// a visual indicator to the player that something has happened, and the second
+		// it stops the ability to spam attacks on a single creature
+		victim->KnockBack(tx / d, ty / d, projectile);
+
+		if (victim != m_pPlayer) 
+		{
+			// Quest reasons - i.e. enemy NPC - Could be to start battle
+			// Other OnInteraction code above assumed object was friendly - This will allow interaction
+			// with enemy objects, if need be
+			// Most enemies will ignore this
+			victim->OnInteract(m_pPlayer);
+		}
+		else
+		{
+			// We must ensure the player is never pushed out of bounds by the physics engine. This
+			// is a bit of a hack, but it allows knockbacks to occur providing there is an exit
+			// point for the player to be knocked back into. If the player is "mobbed" then they
+			// become trapped, and must fight their way out
+			victim->bSolidVsDynamic = true;
+		}
+
+		if (projectile->bOneHit)
+			projectile->bRedundant = true;
+	}
 }

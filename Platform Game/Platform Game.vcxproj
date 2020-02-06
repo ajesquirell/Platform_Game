@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Dynamic_Projectile.cpp" />
     <ClCompile Include="Game_Utilities.cpp" />
     <ClCompile Include="Assets.cpp" />
     <ClCompile Include="Commands.cpp" />

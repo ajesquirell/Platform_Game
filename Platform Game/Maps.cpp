@@ -160,6 +160,25 @@ bool cMap_Level1::PopulateDynamics(vector<cDynamic*>& vecDyns)
 		g->py = 0.0f;
 	}
 
+	cDynamic* g = new cDynamic_Creature("Die");
+	vecDyns.push_back(g);
+	g->px = 11.0f;
+	g->py = 3.0f;
+	//g->vx = -8.0f;
+	//g->vy = -8.0f;
+	g->bFriendly = false;
+	//g->bGravityApplies = false;
+
+	/*cAnimator* a = new cAnimator;
+	a->mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	a->ChangeState("default");
+	cDynamic_Projectile* h = new cDynamic_Projectile(3.0f, 3.0f, false, 15.0f, 0.0f, 10.0f, 2.0f, *a, 2.0f);
+	h->bOneHit = true;
+	vecDyns.push_back(h);
+	cDynamic_Projectile* j = new cDynamic_Projectile(0.0f, 3.0f, false, 15.0f, 0.0f, 10.0f, 2.0f, *a, 2.0f);
+	j->bOneHit = true;
+	vecDyns.push_back(j);*/
+
 	return true;
 }
 

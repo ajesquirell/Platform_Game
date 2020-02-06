@@ -13,7 +13,6 @@
 	Should really figure out how to throw exceptions instead of just outputing an error when things aren't loaded right here
 +++++++++++++++*/
 
-#define RETURN_NEW_ITEM(n) return new cItem_ ##n
 
 class Assets //Singleton     (Like managers with Hololens! or one gigantic global variable)
 {
@@ -53,13 +52,16 @@ public:
 		switch (mapItems[name])
 		{
 		case 1:
-			RETURN_NEW_ITEM(Health);
+			return new cItem_Health;
 			break;
 		case 2:
-			RETURN_NEW_ITEM(HealthBoost);
+			return new cItem_HealthBoost;
 			break;
 		case 3:
-			RETURN_NEW_ITEM(FlamesCash);
+			return new cItem_FlamesCash;
+			break;
+		case 4:
+			return new cWeapon_Sword;
 			break;
 		}
 	}

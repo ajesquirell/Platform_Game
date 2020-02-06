@@ -1,7 +1,10 @@
 #include "Items.h"
 #include "Assets.h"
 #include "olcPGEX_Sound.h"
+#include "Jerry_Engine.h"
 #include <algorithm>
+
+Platformer* cItem::g_engine = nullptr;
 
 using namespace std;
 
@@ -125,4 +128,88 @@ bool cItem_FlamesCash::OnUse(cDynamic* object)
 	((cDynamic_Creature_Jerry*)object)->nScore += 10;
 	olc::SOUND::PlaySample(Assets::get().GetSound("sndSampleB")); // Plays Sample B
 	return true;
+}
+
+//================================================================================================
+//											Weapon - Base weapon class (Like reg item, just stores damage)
+//================================================================================================
+cWeapon::cWeapon(string name, string desc, int dmg) : cItem(name, desc)
+{
+	nDamage = dmg;
+}
+
+bool cWeapon::OnInteract(cDynamic* object)
+{
+	return false;
+}
+
+bool cWeapon::OnUse(cDynamic* object)
+{
+	return false;
+}
+
+//================================================================================================
+//											Weapon - Sword
+//================================================================================================
+cWeapon_Sword::cWeapon_Sword() :
+	cWeapon("Basic Sword", "A wooden sword - 5 dmg", 5)
+{
+	//Add sprites here!
+	// Weapon Model Sprites (Can make him hold weapon later)
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	animItem.ChangeState("default");
+
+	// Projectile Sprites
+	animProjectile.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	animProjectile.ChangeState("default");
+}
+
+bool cWeapon_Sword::OnUse(cDynamic* object)
+{
+	// When weapons are used, they are used on the object that owns the weapon, i.e.
+	// the attacker. However this does not imply the attacker attacks themselves
+
+	//Get direction of attacker
+	cDynamic_Creature* aggressor = (cDynamic_Creature*)object;
+
+	// Determine attack origin
+	float x, y, vx, vy;
+	if (aggressor->fFaceDir == cDynamic_Creature::LEFT) //Don't really need this, because we have fFaceDir
+	{
+		x = aggressor->px - 1.0f; //Not 1.0f in order for vector calculations in Jerry_Engine::Damage() to not be zero (sort of a hack)
+		y = aggressor->py;
+		vx = -1.0f; vy = 0.0f;
+	}
+
+	if (aggressor->fFaceDir == cDynamic_Creature::RIGHT)
+	{
+		x = aggressor->px + 1.0f;
+		y = aggressor->py;
+		vx = 1.0f; vy = 0.0f;
+	}
+
+	if (aggressor->nHealth == aggressor->nHealthMax)
+	{
+		// Beam Sword
+		cDynamic_Projectile* p = new cDynamic_Projectile(x, y, aggressor->bFriendly, vx * 15.0f, vy * 15.0f, 1.0f, animProjectile, aggressor->fFaceDir);
+		p->bSolidVsMap = true;
+		p->bSolidVsDynamic = false;
+		p->nDamage = this->nDamage; //5
+		p->bOneHit = true;
+		p->fKnockBackVel = 4.0f;
+		p->fKnockBackDuration = 0.1f;
+
+		g_engine->AddProjectile(p);
+	}
+
+	cDynamic_Projectile* p = new cDynamic_Projectile(x, y, aggressor->bFriendly, aggressor->vx, aggressor->vy, 0.1f, animProjectile, aggressor->fFaceDir);
+	p->bSolidVsMap = false;
+	p->bSolidVsDynamic = false;
+	p->nDamage = this->nDamage; //5
+	p->bOneHit = true;
+	p->fKnockBackVel = 7.0f;
+
+	g_engine->AddProjectile(p);
+
+	return false; //Remove from inventory
 }

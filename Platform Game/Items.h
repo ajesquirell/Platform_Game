@@ -2,6 +2,8 @@
 #include "Animator.h"
 #include "Dynamics.h"
 
+class Platformer;
+
 class cItem
 {
 public:
@@ -18,6 +20,8 @@ public:
 	bool bKeyItem = false;
 	bool bEquipable = false;
 	bool bGravityApplies = true;
+
+	static Platformer* g_engine;
 
 protected:
 	cAnimator animItem;
@@ -53,5 +57,35 @@ class cItem_FlamesCash : public cItem
 public:
 	cItem_FlamesCash();
 	bool OnInteract(cDynamic* object) override;
+	bool OnUse(cDynamic* object) override;
+};
+
+//================================================================================================
+//											Weapon - Base weapon class (Like reg item, just stores damage)
+//================================================================================================
+class cWeapon : public cItem
+{
+public:
+	cWeapon(std::string name, std::string desc, int dmg);
+	bool OnInteract(cDynamic* object) override;
+	bool OnUse(cDynamic* object) override;
+
+public:
+	int nDamage = 0;
+
+protected:
+	cAnimator animProjectile; // What will actually appear when weapon is used. The bullet, arrow, etc. Not weapon model
+};
+
+//================================================================================================
+//											Weapon - Sword
+//================================================================================================
+
+class cWeapon_Sword : public cWeapon
+{
+public:
+	cWeapon_Sword();
+
+public:
 	bool OnUse(cDynamic* object) override;
 };
