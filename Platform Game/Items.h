@@ -89,3 +89,16 @@ public:
 public:
 	bool OnUse(cDynamic* object) override;
 };
+
+//================================================================================================
+//											Weapon - Pistol
+//================================================================================================
+
+class cWeapon_Pistol : public cWeapon
+{
+public:
+	cWeapon_Pistol();
+
+public:
+	bool OnUse(cDynamic* object) override;
+};

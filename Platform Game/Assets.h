@@ -63,6 +63,9 @@ public:
 		case 4:
 			return new cWeapon_Sword;
 			break;
+		case 5:
+			return new cWeapon_Pistol;
+			break;
 		}
 	}
 

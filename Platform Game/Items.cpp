@@ -156,7 +156,7 @@ cWeapon_Sword::cWeapon_Sword() :
 {
 	//Add sprites here!
 	// Weapon Model Sprites (Can make him hold weapon later)
-	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Squat"));
 	animItem.ChangeState("default");
 
 	// Projectile Sprites
@@ -165,6 +165,72 @@ cWeapon_Sword::cWeapon_Sword() :
 }
 
 bool cWeapon_Sword::OnUse(cDynamic* object)
+{
+	// When weapons are used, they are used on the object that owns the weapon, i.e.
+	// the attacker. However this does not imply the attacker attacks themselves
+
+	//Get direction of attacker
+	cDynamic_Creature* aggressor = (cDynamic_Creature*)object;
+
+	// Determine attack origin
+	float x, y, vx, vy;
+	if (aggressor->fFaceDir == cDynamic_Creature::LEFT) //Don't really need this, because we have fFaceDir
+	{
+		x = aggressor->px - 1.0f; //Not 1.0f in order for vector calculations in Jerry_Engine::Damage() to not be zero (sort of a hack)
+		y = aggressor->py;
+		vx = -1.0f; vy = 0.0f;
+	}
+
+	if (aggressor->fFaceDir == cDynamic_Creature::RIGHT)
+	{
+		x = aggressor->px + 1.0f;
+		y = aggressor->py;
+		vx = 1.0f; vy = 0.0f;
+	}
+
+	if (aggressor->nHealth == aggressor->nHealthMax)
+	{
+		// Beam Sword
+		cDynamic_Projectile* p = new cDynamic_Projectile(x, y, aggressor->bFriendly, vx * 15.0f, vy * 15.0f, 1.0f, animProjectile, aggressor->fFaceDir);
+		p->bSolidVsMap = true;
+		p->bSolidVsDynamic = false;
+		p->nDamage = this->nDamage; //5
+		p->bOneHit = true;
+		p->fKnockBackVel = 4.0f;
+		p->fKnockBackDuration = 0.1f;
+
+		g_engine->AddProjectile(p);
+	}
+
+	cDynamic_Projectile* p = new cDynamic_Projectile(x, y, aggressor->bFriendly, aggressor->vx, aggressor->vy, 0.1f, animProjectile, aggressor->fFaceDir);
+	p->bSolidVsMap = false;
+	p->bSolidVsDynamic = false;
+	p->nDamage = this->nDamage; //5
+	p->bOneHit = true;
+	p->fKnockBackVel = 7.0f;
+
+	g_engine->AddProjectile(p);
+
+	return false; //Remove from inventory
+}
+
+//================================================================================================
+//											Weapon - Pistol
+//================================================================================================
+cWeapon_Pistol::cWeapon_Pistol() :
+	cWeapon("Pistol", "A standard pistol. Don't worry, Jerry has is concealed carry permits. - 2 dmg", 2)
+{
+	//Add sprites here!
+	// Weapon Model Sprites (Can make him hold weapon later)
+	animItem.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Squat"));
+	animItem.ChangeState("default");
+
+	// Projectile Sprites
+	animProjectile.mapStates["default"].push_back(Assets::get().GetSprite("Jerry_Idle"));
+	animProjectile.ChangeState("default");
+}
+
+bool cWeapon_Pistol::OnUse(cDynamic* object)
 {
 	// When weapons are used, they are used on the object that owns the weapon, i.e.
 	// the attacker. However this does not imply the attacker attacks themselves
