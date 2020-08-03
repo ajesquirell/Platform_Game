@@ -8,6 +8,7 @@ Platformer::Platformer()
 }
 
 
+
 bool Platformer::HandlePickup(wchar_t c) //Function for handling the different pickups without jumbling up the game loop with code for every single pickup
 {
 	bool success = false; //In case we add a pickup and don't implement it here, it will return false.
